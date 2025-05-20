@@ -31,6 +31,15 @@ class LandingScreen extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
+                    context.go('/home');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(200, 50),
+                  ),
+                  child: const Text('Home'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
                     context.go('/sign_up');
                   },
                   style: ElevatedButton.styleFrom(

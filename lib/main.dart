@@ -41,10 +41,10 @@ class AmplifyAuthApp extends StatelessWidget {
             minimumSize: WidgetStateProperty.resolveWith<Size>((states) {
               if (MediaQuery.of(context).size.width < 600) {
                 // Mobile view: 80% width
-                return Size(MediaQuery.of(context).size.width * 0.8, 40);
+                return Size(MediaQuery.of(context).size.width * 0.85, 40);
               } else {
                 // Tablet view: Fixed size
-                return const Size(200, 50);
+                return const Size(200, 40);
               }
             }),
             maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
@@ -73,7 +73,7 @@ class AmplifyAuthApp extends StatelessWidget {
                 return Size(MediaQuery.of(context).size.width * 0.85, 40);
               } else {
                 // Tablet view: Fixed size
-                return const Size(220, 40);
+                return const Size(200, 40);
               }
             }),
             maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
@@ -99,10 +99,10 @@ class AmplifyAuthApp extends StatelessWidget {
             minimumSize: WidgetStateProperty.resolveWith<Size>((states) {
               if (MediaQuery.of(context).size.width < 600) {
                 // Mobile view: 80% width
-                return Size(MediaQuery.of(context).size.width * 0.8, 40);
+                return Size(MediaQuery.of(context).size.width * 0.85, 40);
               } else {
                 // Tablet view: Fixed size
-                return const Size(200, 50);
+                return const Size(200, 40);
               }
             }),
             maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
