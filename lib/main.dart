@@ -134,3 +134,35 @@ class AmplifyAuthApp extends StatelessWidget {
     );
   }
 }
+
+void showGentleSnackBar(BuildContext context, String message,
+    {SnackBarType type = SnackBarType.info}) {
+  Color backgroundColor;
+  Color textColor;
+  switch (type) {
+    case SnackBarType.success:
+      backgroundColor = Colors.green;
+      textColor = Colors.white;
+      break;
+    case SnackBarType.error:
+      backgroundColor = Colors.red;
+      textColor = Colors.white;
+      break;
+    case SnackBarType.info:
+      backgroundColor = Colors.amber;
+      textColor = Colors.black;
+      break;
+  }
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(color: textColor),
+      ),
+      backgroundColor: backgroundColor,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
+
+enum SnackBarType { success, error, info }

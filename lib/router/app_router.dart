@@ -4,6 +4,7 @@ import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
 import '../features/auth/presentation/verify_email_screen.dart';
 import '../features/auth/presentation/verification_code_screen.dart';
+import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/design_components/presentation/ui_components_screen.dart';
 import '../features/design_components/presentation/new_ui_components_screen.dart';
@@ -99,6 +100,19 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/about_us',
       builder: (context, state) => const AboutUsScreen(),
+    ),
+    GoRoute(
+      path: '/forgot_password',
+      builder: (context, state) => const ForgotPasswordScreen(),
+      redirect: (context, state) async {
+        try {
+          final session = await Amplify.Auth.fetchAuthSession();
+          if (session.isSignedIn) {
+            return '/home';
+          }
+        } catch (e) {}
+        return null;
+      },
     ),
   ],
 );

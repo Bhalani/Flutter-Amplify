@@ -101,6 +101,7 @@ Future<void> confirmSignUp(
 
 Future<void> signInUser(WidgetRef ref, String email, String password) async {
   final authService = ref.read(authServiceProvider);
+  debugPrint('Signing in with email: $email');
   try {
     final result = await authService.signIn(email, password);
     ref.read(authStateProvider.notifier).state = AuthState(

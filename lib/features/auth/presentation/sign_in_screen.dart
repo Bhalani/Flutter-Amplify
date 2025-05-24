@@ -3,102 +3,158 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../shared/widgets/logo_widget.dart';
+import 'package:amplify_auth/main.dart';
 
-class SignInScreen extends ConsumerWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>();
-    String email = '';
-    String password = '';
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
+}
 
+class _SignInScreenState extends ConsumerState<SignInScreen> {
+  final formKey = GlobalKey<FormState>();
+  String email = '';
+  String password = '';
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const LogoWidget(),
         centerTitle: true,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
+      body: Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) =>
+                          value == null || !value.contains('@')
+                              ? 'Enter a valid email'
+                              : null,
+                      onSaved: (value) => email = value ?? '',
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: true,
+                      validator: (value) => value == null || value.length < 6
+                          ? 'Password must be at least 6 characters'
+                          : null,
+                      onSaved: (value) => password = value ?? '',
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Spacer(),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.only(right: 5),
+                            minimumSize: Size(0, 0),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  context.go('/forgot_password');
+                                },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              if (formKey.currentState?.validate() ?? false) {
+                                formKey.currentState?.save();
+                                setState(() => isLoading = true);
+                                try {
+                                  await signInUser(
+                                    ref,
+                                    email,
+                                    password,
+                                  );
+                                  showGentleSnackBar(
+                                      context, 'Sign-in successful!',
+                                      type: SnackBarType.success);
+                                  context.go('/home');
+                                } catch (e) {
+                                  showGentleSnackBar(context, 'Error: $e',
+                                      type: SnackBarType.error);
+                                } finally {
+                                  setState(() => isLoading = false);
+                                }
+                              }
+                            },
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text('Sign In'),
+                    ),
+                    const SizedBox(height: 32),
+                    Text("Don't have an account?"),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              context.go('/sign_up');
+                            },
+                      child: const Text('Sign Up'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value == null || !value.contains('@')
-                      ? 'Enter a valid email'
-                      : null,
-                  onSaved: (value) => email = value ?? '',
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  validator: (value) => value == null || value.length < 6
-                      ? 'Password must be at least 6 characters'
-                      : null,
-                  onSaved: (value) => password = value ?? '',
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      // Handle forgot password
-                    },
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (formKey.currentState?.validate() ?? false) {
-                      formKey.currentState?.save();
-                      try {
-                        await signInUser(
-                          ref,
-                          email,
-                          password,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Sign-in successful!')),
-                        );
-                        context.go('/home');
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $e')),
-                        );
-                      }
-                    }
-                  },
-                  child: const Text('Sign In'),
-                ),
-                const SizedBox(height: 32),
-                Text("Don\'t have an account?"),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: () {
-                    context.go('/sign_up');
-                  },
-                  child: const Text('Sign Up'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          if (isLoading)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  color: Colors.black.withOpacity(0.08),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

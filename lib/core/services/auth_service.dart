@@ -63,4 +63,34 @@ class AuthService {
       rethrow;
     }
   }
+
+  Future<ResetPasswordResult> resetPassword(String email) async {
+    try {
+      final result = await Amplify.Auth.resetPassword(username: email.trim());
+      debugPrint("Result: ${result}");
+      debugPrint(
+          'Password reset code sent. Next step: \\${result.nextStep.updateStep}');
+      return result;
+    } catch (e) {
+      debugPrint('Error sending password reset code: $e');
+      rethrow;
+    }
+  }
+
+  Future<ResetPasswordResult> confirmResetPassword(
+      String email, String newPassword, String code) async {
+    try {
+      final result = await Amplify.Auth.confirmResetPassword(
+        username: email.trim(),
+        newPassword: newPassword,
+        confirmationCode: code,
+      );
+      debugPrint('Result: ${result}');
+      debugPrint('Password reset confirmed.');
+      return result;
+    } catch (e) {
+      debugPrint('Error confirming password reset: $e');
+      rethrow;
+    }
+  }
 }
