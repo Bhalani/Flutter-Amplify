@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:amplify_auth/main.dart';
 import '../../../core/providers/auth_provider.dart';
 
 class VerificationCodeScreen extends ConsumerWidget {
@@ -57,21 +58,17 @@ class VerificationCodeScreen extends ConsumerWidget {
                       final message = ref.read(authStateProvider).message;
 
                       if (isSignUpComplete) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                        content: Text('Email verified successfully!')),
-                        );
-                        // Navigator.of(context).pushReplacementNamed('/home');
+                        showGentleSnackBar(
+                            context, 'Email verified successfully!',
+                            type: SnackBarType.success);
                         context.go('/home');
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $message')),
-                        );
+                        showGentleSnackBar(context, 'Error: $message',
+                            type: SnackBarType.error);
                       }
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
-                      );
+                      showGentleSnackBar(context, 'Error: $e',
+                          type: SnackBarType.error);
                     }
                   }
                 },
@@ -82,14 +79,11 @@ class VerificationCodeScreen extends ConsumerWidget {
                 onPressed: () async {
                   try {
                     await resendVerificationCode(ref, email);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Verification code resent!')),
-                    );
+                    showGentleSnackBar(context, 'Verification code resent!',
+                        type: SnackBarType.info);
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e')),
-                    );
+                    showGentleSnackBar(context, 'Error: $e',
+                        type: SnackBarType.error);
                   }
                 },
                 child: const Text('Resend Code'),

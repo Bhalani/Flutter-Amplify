@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:amplify_auth/main.dart';
 import '../../../core/providers/auth_provider.dart';
 
 class VerifyEmailScreen extends ConsumerWidget {
@@ -37,32 +38,36 @@ class VerifyEmailScreen extends ConsumerWidget {
                   if (formKey.currentState?.validate() ?? false) {
                     formKey.currentState?.save();
                     if (email.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Please enter your email.')),
+                      showGentleSnackBar(
+                        context,
+                        'Please enter your email.',
+                        type: SnackBarType.error,
                       );
                       return;
                     }
                     try {
                       await resendVerificationCode(ref, email);
                       if (ref.read(authStateProvider).isConfirming) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Verification code sent!')),
+                        showGentleSnackBar(
+                          context,
+                          'Verification code sent!',
+                          type: SnackBarType.success,
                         );
                         context
                             .go('/verification_code', extra: {'email': email});
                       } else {
                         showLoginButton.value = true;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text(ref.read(authStateProvider).message)),
+                        showGentleSnackBar(
+                          context,
+                          ref.read(authStateProvider).message,
+                          type: SnackBarType.info,
                         );
                       }
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
+                      showGentleSnackBar(
+                        context,
+                        'Error: $e',
+                        type: SnackBarType.error,
                       );
                     }
                   }

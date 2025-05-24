@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth/main.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,8 +20,10 @@ class HomeScreen extends StatelessWidget {
                 await Amplify.Auth.signOut();
                 context.go('/sign_in');
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Sign out failed: $e')),
+                showGentleSnackBar(
+                  context,
+                  'Sign out failed: $e',
+                  type: SnackBarType.error,
                 );
               }
             },
