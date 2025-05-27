@@ -26,7 +26,7 @@ class SignUpScreen extends ConsumerWidget {
       body: Stack(
         children: [
           Center(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: formKey,
@@ -183,10 +183,8 @@ class SignUpScreen extends ConsumerWidget {
                               firstName,
                               familyName,
                             );
-                            final isConfirming =
-                                ref.read(authStateProvider).isConfirming;
 
-                            if (isConfirming) {
+                            if (ref.read(authStateProvider).isConfirming) {
                               context.go('/code_verification', extra: email);
                             } else {
                               showGentleSnackBar(

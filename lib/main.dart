@@ -145,7 +145,7 @@ void showGentleSnackBar(BuildContext context, String message,
       textColor = Colors.white;
       break;
     case SnackBarType.error:
-      backgroundColor = Colors.red;
+      backgroundColor = const Color(0xFFFF3333); // Material Design dark red
       textColor = Colors.white;
       break;
     case SnackBarType.info:

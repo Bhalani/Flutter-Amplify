@@ -17,9 +17,26 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   String email = '';
   String password = '';
   bool isLoading = false;
+  late TextEditingController emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userEmail = ref.watch(userEmailProvider);
+    if (userEmail != null && userEmail != emailController.text) {
+      emailController.text = userEmail;
+    }
     return Scaffold(
       appBar: AppBar(
         title: const LogoWidget(),
@@ -28,7 +45,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       body: Stack(
         children: [
           Center(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: formKey,
@@ -47,6 +64,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      controller: emailController,
                       decoration: const InputDecoration(labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) =>
@@ -106,12 +124,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                                     email,
                                     password,
                                   );
-                                  showGentleSnackBar(
-                                      context, 'Sign-in successful!',
-                                      type: SnackBarType.success);
-                                  context.go('/home');
+                                  if (ref.read(authStateProvider).isSignedIn) {
+                                    context.go('/home');
+                                    showGentleSnackBar(context,
+                                        ref.read(authStateProvider).message,
+                                        type: SnackBarType.success);
+                                  } else {
+                                    showGentleSnackBar(context,
+                                        ref.read(authStateProvider).message,
+                                        type: SnackBarType.error);
+                                  }
                                 } catch (e) {
-                                  showGentleSnackBar(context, 'Error: $e',
+                                  showGentleSnackBar(context,
+                                      ref.read(authStateProvider).message,
                                       type: SnackBarType.error);
                                 } finally {
                                   setState(() => isLoading = false);

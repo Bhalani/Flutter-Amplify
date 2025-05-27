@@ -93,4 +93,20 @@ class AuthService {
       rethrow;
     }
   }
+
+  Future<void> updatePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final result = await Amplify.Auth.updatePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      debugPrint("result: $result");
+    } on AuthException catch (e) {
+      debugPrint('Error updating password: \\${e.message}');
+      rethrow;
+    }
+  }
 }

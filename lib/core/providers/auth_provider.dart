@@ -1,12 +1,38 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 final authStateProvider =
     StateProvider<AuthState>((ref) => AuthState.initial());
+
+final userEmailProvider = StateNotifierProvider<UserEmailNotifier, String?>(
+    (ref) => UserEmailNotifier());
+
+class UserEmailNotifier extends StateNotifier<String?> {
+  UserEmailNotifier() : super(null) {
+    _loadEmail();
+  }
+
+  Future<void> _loadEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getString('user_email');
+  }
+
+  Future<void> setEmail(String? email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (email != null && email.isNotEmpty) {
+      await prefs.setString('user_email', email);
+      state = email;
+    } else {
+      await prefs.remove('user_email');
+      state = null;
+    }
+  }
+}
 
 class AuthState {
   final bool isSignedIn;
@@ -37,6 +63,7 @@ Future<void> signUpUser(WidgetRef ref, BuildContext context, String email,
   try {
     final result =
         await authService.signUp(email, password, firstName, familyName);
+    await ref.read(userEmailProvider.notifier).setEmail(email);
 
     print('result: ${result}');
     print('result.nextStep: ${result.nextStep}');
@@ -104,6 +131,7 @@ Future<void> signInUser(WidgetRef ref, String email, String password) async {
   debugPrint('Signing in with email: $email');
   try {
     final result = await authService.signIn(email, password);
+    await ref.read(userEmailProvider.notifier).setEmail(email);
     ref.read(authStateProvider.notifier).state = AuthState(
       isSignedIn: result.isSignedIn,
       isSignUpComplete: true,
@@ -111,12 +139,21 @@ Future<void> signInUser(WidgetRef ref, String email, String password) async {
       message: result.isSignedIn ? 'Sign-in successful!' : 'Sign-in failed.',
     );
   } catch (e) {
+    String errorMsg = e.toString();
+    final messageMatch = RegExp(r'"message":\s*"([^"]+)"').firstMatch(errorMsg);
+    if (messageMatch != null) {
+      errorMsg = messageMatch.group(1)!;
+    } else {
+      errorMsg = errorMsg.replaceFirst(RegExp(r'^Exception: '), '');
+    }
+
     ref.read(authStateProvider.notifier).state = AuthState(
       isSignedIn: false,
       isSignUpComplete: true,
       isConfirming: false,
-      message: 'Error during sign-in: $e',
+      message: errorMsg,
     );
+    rethrow;
   }
 }
 
@@ -156,5 +193,33 @@ Future<void> resendVerificationCode(WidgetRef ref, String email) async {
       isConfirming: false,
       message: errorMsg,
     );
+  }
+}
+
+Future<void> updatePasswordProvider(
+  WidgetRef ref,
+  String oldPassword,
+  String newPassword,
+) async {
+  final authService = ref.read(authServiceProvider);
+  try {
+    await authService.updatePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    );
+    ref.read(authStateProvider.notifier).state = AuthState(
+      isSignedIn: true,
+      isSignUpComplete: true,
+      isConfirming: false,
+      message: 'Password updated successfully!',
+    );
+  } on AuthException catch (e) {
+    ref.read(authStateProvider.notifier).state = AuthState(
+      isSignedIn: true,
+      isSignUpComplete: true,
+      isConfirming: false,
+      message: e.message,
+    );
+    rethrow;
   }
 }

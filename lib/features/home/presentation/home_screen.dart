@@ -2,36 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth/main.dart';
+import '../../shared/widgets/app_scaffold.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  static const _navRoutes = [
+    '/home',
+    '/immobilienmiete',
+    '/money_manager',
+    '/insurance',
+    '/account',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
+      currentIndex: 0,
+      onNavTap: (index) {
+        if (index != 0) {
+          context.go(_navRoutes[index]);
+        }
+      },
       appBar: AppBar(
         title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign Out',
-            onPressed: () async {
-              try {
-                await Amplify.Auth.signOut();
-                context.go('/sign_in');
-              } catch (e) {
-                showGentleSnackBar(
-                  context,
-                  'Sign out failed: $e',
-                  type: SnackBarType.error,
-                );
-              }
-            },
-          ),
-        ],
       ),
       body: const Center(
-        child: Text('Welcome to the Home Screen!'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Welcome to home page!',
+              style: TextStyle(fontFamily: 'Lato', fontSize: 18),
+            ),
+          ],
+        ),
       ),
     );
   }
