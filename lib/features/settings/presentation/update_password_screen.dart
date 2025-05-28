@@ -83,8 +83,7 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
               children: [
                 TextFormField(
                   controller: _currentPasswordController,
-                  decoration:
-                      const InputDecoration(labelText: 'Current Password'),
+                  decoration: getPlatformInputDecoration('Current Password'),
                   obscureText: true,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Enter your current password'
@@ -94,7 +93,7 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _newPasswordController,
-                  decoration: const InputDecoration(labelText: 'New Password'),
+                  decoration: getPlatformInputDecoration('New Password'),
                   obscureText: true,
                   validator: (value) => value == null || value.length < 6
                       ? 'Password must be at least 6 characters'
@@ -105,7 +104,7 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   decoration:
-                      const InputDecoration(labelText: 'Confirm New Password'),
+                      getPlatformInputDecoration('Confirm New Password'),
                   obscureText: true,
                   validator: (value) => value != _newPasswordController.text
                       ? 'Passwords do not match'

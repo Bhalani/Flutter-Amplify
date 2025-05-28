@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
+import '../services/biometric_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+final biometricServiceProvider =
+    Provider<BiometricService>((ref) => BiometricService());
 
 final authStateProvider =
     StateProvider<AuthState>((ref) => AuthState.initial());

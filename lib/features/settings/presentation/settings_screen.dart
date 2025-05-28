@@ -1,16 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../shared/widgets/app_scaffold.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/providers/auth_provider.dart';
+import '../../../main.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool biometricsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricsState();
+  }
+
+  Future<void> _loadBiometricsState() async {
+    final storage = const FlutterSecureStorage();
+    final enabled = await storage.read(key: 'biometrics_enabled');
+    setState(() {
+      biometricsEnabled = enabled == 'true';
+    });
+  }
+
+  Future<void> _toggleBiometrics() async {
+    final biometricService = ref.read(biometricServiceProvider);
+    if (!biometricsEnabled) {
+      // Enable biometrics
+      try {
+        final availableBiometrics =
+            await biometricService.localAuth.getAvailableBiometrics();
+        debugPrint('Available biometrics: $availableBiometrics');
+        final canCheck = await biometricService.canCheckBiometrics();
+        if (!canCheck) {
+          showDialog(
+            context: context,
+            builder: (context) => const AlertDialog(
+              title: Text('Biometrics not available'),
+              content: Text(
+                  'Your device does not support biometric authentication.'),
+            ),
+          );
+          return;
+        }
+        final authenticated = await biometricService.localAuth.authenticate(
+          localizedReason: 'Please authenticate to enable biometrics',
+        );
+        if (authenticated) {
+          await const FlutterSecureStorage()
+              .write(key: 'biometrics_enabled', value: 'true');
+          setState(() => biometricsEnabled = true);
+          showGentleSnackBar(context, 'Biometrics enabled!',
+              type: SnackBarType.success);
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => const AlertDialog(
+              title: Text('Biometric Authentication Failed'),
+              content: Text('Biometric authentication was not successful.'),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error: $e');
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Biometric error: $e'),
+          ),
+        );
+      }
+    } else {
+      await const FlutterSecureStorage()
+          .write(key: 'biometrics_enabled', value: 'false');
+      setState(() => biometricsEnabled = false);
+      showGentleSnackBar(context, 'Biometrics disabled.',
+          type: SnackBarType.info);
+    }
+    // Always reload state after toggle to ensure UI is correct
+    await _loadBiometricsState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: biometricsEnabled ? Colors.green : Colors.grey,
               size: 36,
             ),
-            onTap: () {
-              setState(() {
-                biometricsEnabled = !biometricsEnabled;
-              });
-            },
+            onTap: _toggleBiometrics,
           ),
           const Divider(),
           ListTile(

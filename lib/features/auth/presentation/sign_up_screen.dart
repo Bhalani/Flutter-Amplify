@@ -45,7 +45,7 @@ class SignUpScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'First Name'),
+                      decoration: getPlatformInputDecoration('First Name'),
                       validator: (value) => value == null || value.isEmpty
                           ? 'First name is required'
                           : null,
@@ -53,7 +53,7 @@ class SignUpScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Family Name'),
+                      decoration: getPlatformInputDecoration('Family Name'),
                       validator: (value) => value == null || value.isEmpty
                           ? 'Family name is required'
                           : null,
@@ -61,7 +61,7 @@ class SignUpScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Email'),
+                      decoration: getPlatformInputDecoration('Email'),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) =>
                           value == null || !value.contains('@')
@@ -72,7 +72,7 @@ class SignUpScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: passwordController,
-                      decoration: InputDecoration(labelText: 'Password'),
+                      decoration: getPlatformInputDecoration('Password'),
                       obscureText: true,
                       validator: (value) => value == null || value.length < 6
                           ? 'Password must be at least 6 characters'
@@ -84,7 +84,7 @@ class SignUpScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     TextFormField(
                       decoration:
-                          InputDecoration(labelText: 'Confirm Password'),
+                          getPlatformInputDecoration('Confirm Password'),
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -121,11 +121,6 @@ class SignUpScreen extends ConsumerWidget {
                                     title: const Text('Terms and Conditions'),
                                     content: SingleChildScrollView(
                                       child: Text(
-                                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n'
-                                        'Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat. Curabitur augue lorem, dapibus quis, laoreet et, pretium ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse platea dictumst.\n\n'
-                                        'Fusce convallis, mauris imperdiet gravida bibendum, nisl turpis suscipit mauris, sed placerat ipsum urna sed risus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Nulla facilisi. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin at libero id massa vulputate tincidunt. Vivamus quis mi. Phasellus a est. Phasellus magna. In hac habitasse platea dictumst. Curabitur at lacus ac velit ornare lobortis. Curabitur a felis in nunc fringilla tristique.\n\n'
-                                        'Morbi mollis tellus ac sapien. Phasellus at dui in ligula mollis ultricies. Integer placerat tristique nisl. Praesent augue. Fusce commodo aliquam arcu. Nam commodo suscipit quam. Sed a libero. Pellentesque egestas, neque sit amet convallis pulvinar, justo nulla eleifend augue, ac auctor orci leo non est. Ut leo. Ut a nisl id ante tempus hendrerit. Curabitur nisi. Quisque malesuada placerat nisl. Nam ipsum risus, rutrum vitae, vestibulum eu, molestie vel, lacus. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis. Vestibulum volutpat, lacus a ultrices sagittis, mi neque euismod dui, eu pulvinar nunc sapien ornare nisl. Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.\n\n'
-                                        'Morbi mollis tellus ac sapien. Phasellus at dui in ligula mollis ultricies. Integer placerat tristique nisl. Praesent augue. Fusce commodo aliquam arcu. Nam commodo suscipit quam. Sed a libero. Pellentesque egestas, neque sit amet convallis pulvinar, justo nulla eleifend augue, ac auctor orci leo non est. Ut leo. Ut a nisl id ante tempus hendrerit. Curabitur nisi. Quisque malesuada placerat nisl. Nam ipsum risus, rutrum vitae, vestibulum eu, molestie vel, lacus. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis. Vestibulum volutpat, lacus a ultrices sagittis, mi neque euismod dui, eu pulvinar nunc sapien ornare nisl. Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.'
                                         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n'
                                         'Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat. Curabitur augue lorem, dapibus quis, laoreet et, pretium ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse platea dictumst.\n\n'
                                         'Fusce convallis, mauris imperdiet gravida bibendum, nisl turpis suscipit mauris, sed placerat ipsum urna sed risus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Nulla facilisi. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin at libero id massa vulputate tincidunt. Vivamus quis mi. Phasellus a est. Phasellus magna. In hac habitasse platea dictumst. Curabitur at lacus ac velit ornare lobortis. Curabitur a felis in nunc fringilla tristique.\n\n'
@@ -185,7 +180,8 @@ class SignUpScreen extends ConsumerWidget {
                             );
 
                             if (ref.read(authStateProvider).isConfirming) {
-                              context.go('/code_verification', extra: email);
+                              context.go('/code_verification',
+                                  extra: {'email': email, 'fromSignUp': true});
                             } else {
                               showGentleSnackBar(
                                 context,

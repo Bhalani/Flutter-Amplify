@@ -25,6 +25,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const LandingScreen(),
+      redirect: (context, state) async {
+        final prefs = await SharedPreferences.getInstance();
+        final userEmail = prefs.getString('user_email');
+        if (userEmail != null && userEmail.isNotEmpty) {
+          return '/sign_in';
+        }
+        return null;
+      },
     ),
     GoRoute(
       path: '/sign_in',
@@ -55,8 +63,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/code_verification',
       builder: (context, state) {
-        final email = state.extra as String;
-        return VerificationCodeScreen(email: email);
+        final extra = state.extra as Map<String, dynamic>?;
+        final email = extra?['email'] as String? ?? '';
+        final fromSignUp = extra?['fromSignUp'] as bool? ?? false;
+        return VerificationCodeScreen(email: email, fromSignUp: fromSignUp);
       },
       redirect: (context, state) async {
         try {
@@ -87,7 +97,6 @@ final GoRouter appRouter = GoRouter(
       redirect: (context, state) async {
         try {
           final session = await Amplify.Auth.fetchAuthSession();
-          debugPrint('Session: $session');
           if (session.isSignedIn) {
             return null; // allow access
           } else {

@@ -47,7 +47,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         showGentleSnackBar(context, 'Verification code sent to your email.',
             type: SnackBarType.info);
       } else if (result.isPasswordReset) {
-        // Password was reset without code (rare, but possible)
         showGentleSnackBar(context, 'Password reset. Please sign in.',
             type: SnackBarType.success);
         context.go('/sign_in');
@@ -90,7 +89,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const LogoWidget(), centerTitle: true),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/sign_in');
+            }
+          },
+          tooltip: 'Back',
+        ),
+        title: const LogoWidget(),
+        centerTitle: true,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -112,7 +125,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 const SizedBox(height: 44),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: getPlatformInputDecoration('Email'),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) => value == null || !value.contains('@')
                       ? 'Enter a valid email'
@@ -123,8 +136,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _codeController,
-                    decoration:
-                        const InputDecoration(labelText: 'Verification Code'),
+                    decoration: getPlatformInputDecoration('Verification Code'),
                     validator: (value) => value == null || value.isEmpty
                         ? 'Enter the code sent to your email'
                         : null,
@@ -132,8 +144,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration:
-                        const InputDecoration(labelText: 'New Password'),
+                    decoration: getPlatformInputDecoration('New Password'),
                     obscureText: true,
                     validator: (value) => value == null || value.length < 6
                         ? 'Password must be at least 6 characters'
@@ -142,8 +153,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _confirmPasswordController,
-                    decoration:
-                        const InputDecoration(labelText: 'Confirm Password'),
+                    decoration: getPlatformInputDecoration('Confirm Password'),
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {

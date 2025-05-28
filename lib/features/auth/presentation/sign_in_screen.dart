@@ -65,7 +65,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: getPlatformInputDecoration('Email'),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) =>
                           value == null || !value.contains('@')
@@ -76,7 +76,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Password'),
+                      decoration: getPlatformInputDecoration('Password'),
                       obscureText: true,
                       validator: (value) => value == null || value.length < 6
                           ? 'Password must be at least 6 characters'
