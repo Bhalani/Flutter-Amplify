@@ -18,6 +18,7 @@ import '../features/insurance/presentation/insurance_screen.dart';
 import '../features/account/presentation/account_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/settings/presentation/update_password_screen.dart';
+import '../features/shared/widgets/app_scaffold.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true, // Enable debug logs for routing
@@ -91,21 +92,120 @@ final GoRouter appRouter = GoRouter(
         return null;
       },
     ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-      redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null; // allow access
-          } else {
-            return '/sign_in';
-          }
-        } catch (e) {
-          return '/sign_in';
-        }
+    ShellRoute(
+      builder: (context, state, child) {
+        // Determine current index from location
+        final location = state.location;
+        int currentIndex = 0;
+        if (location.startsWith('/immobilienmiete'))
+          currentIndex = 1;
+        else if (location.startsWith('/money_manager'))
+          currentIndex = 2;
+        else if (location.startsWith('/insurance'))
+          currentIndex = 3;
+        else if (location.startsWith('/account')) currentIndex = 4;
+        // AppScaffold keeps the bottom nav fixed
+        return AppScaffold(
+          currentIndex: currentIndex,
+          onNavTap: (index) {
+            switch (index) {
+              case 0:
+                context.go('/home');
+                break;
+              case 1:
+                context.go('/immobilienmiete');
+                break;
+              case 2:
+                context.go('/money_manager');
+                break;
+              case 3:
+                context.go('/insurance');
+                break;
+              case 4:
+                context.go('/account');
+                break;
+            }
+          },
+          body: child,
+        );
       },
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const HomeScreen(),
+          redirect: (context, state) async {
+            try {
+              final session = await Amplify.Auth.fetchAuthSession();
+              if (!session.isSignedIn) {
+                return '/sign_in';
+              }
+            } catch (e) {
+              return '/sign_in';
+            }
+            return null;
+          },
+        ),
+        GoRoute(
+          path: '/immobilienmiete',
+          builder: (context, state) => const ImmobilienmieteScreen(),
+          redirect: (context, state) async {
+            try {
+              final session = await Amplify.Auth.fetchAuthSession();
+              if (!session.isSignedIn) {
+                return '/sign_in';
+              }
+            } catch (e) {
+              return '/sign_in';
+            }
+            return null;
+          },
+        ),
+        GoRoute(
+          path: '/money_manager',
+          builder: (context, state) => const MoneyManagerScreen(),
+          redirect: (context, state) async {
+            try {
+              final session = await Amplify.Auth.fetchAuthSession();
+              if (!session.isSignedIn) {
+                return '/sign_in';
+              }
+            } catch (e) {
+              return '/sign_in';
+            }
+            return null;
+          },
+        ),
+        GoRoute(
+          path: '/insurance',
+          builder: (context, state) => const InsuranceScreen(),
+          redirect: (context, state) async {
+            try {
+              final session = await Amplify.Auth.fetchAuthSession();
+              if (!session.isSignedIn) {
+                return '/sign_in';
+              }
+            } catch (e) {
+              return '/sign_in';
+            }
+            return null;
+          },
+        ),
+        GoRoute(
+          path: '/account',
+          builder: (context, state) => const AccountScreen(),
+          redirect: (context, state) async {
+            try {
+              final session = await Amplify.Auth.fetchAuthSession();
+              if (!session.isSignedIn) {
+                return '/sign_in';
+              }
+            } catch (e) {
+              return '/sign_in';
+            }
+            return null;
+          },
+        ),
+      ],
     ),
     GoRoute(
       path: '/design_components',
@@ -130,58 +230,6 @@ final GoRouter appRouter = GoRouter(
           }
         } catch (e) {}
         return null;
-      },
-    ),
-    GoRoute(
-      path: '/immobilienmiete',
-      builder: (context, state) => const ImmobilienmieteScreen(),
-      redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
-      },
-    ),
-    GoRoute(
-      path: '/money_manager',
-      builder: (context, state) => const MoneyManagerScreen(),
-      redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
-      },
-    ),
-    GoRoute(
-      path: '/insurance',
-      builder: (context, state) => const InsuranceScreen(),
-      redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
-      },
-    ),
-    GoRoute(
-      path: '/account',
-      builder: (context, state) => const AccountScreen(),
-      redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
       },
     ),
     GoRoute(
