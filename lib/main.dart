@@ -36,58 +36,116 @@ class BiometricGate extends StatefulWidget {
   State<BiometricGate> createState() => _BiometricGateState();
 }
 
-class _BiometricGateState extends State<BiometricGate> {
+class _BiometricGateState extends State<BiometricGate>
+    with WidgetsBindingObserver {
   bool _unlocked = false;
   bool _checking = true;
+  bool _biometricFailed = false;
+  bool _isRetryingBiometric = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _secureStartupCheck();
+  }
+
+  Future<void> _secureStartupCheck() async {
+    final storage = const FlutterSecureStorage();
+    final biometricsEnabled =
+        await storage.read(key: 'biometrics_enabled') == 'true';
+    final biometricFailedFlag =
+        await storage.read(key: 'biometric_failed') == 'true';
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (!biometricsEnabled && session.isSignedIn) {
+        await Amplify.Auth.signOut();
+        await storage.delete(key: 'biometric_failed');
+        if (mounted) setState(() {});
+        return;
+      }
+      // Only skip prompt if fail flag is set and not retrying
+      if (biometricsEnabled &&
+          session.isSignedIn &&
+          biometricFailedFlag &&
+          !_isRetryingBiometric) {
+        setState(() {
+          _unlocked = false;
+          _checking = false;
+          _biometricFailed = true;
+        });
+        return;
+      }
+    } catch (e) {
+      // Ignore errors
+    }
     _checkAuthAndBiometrics();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // No-op: no longer handling logout on background/close
   }
 
   Future<void> _checkAuthAndBiometrics() async {
     final storage = const FlutterSecureStorage();
     final enabled = await storage.read(key: 'biometrics_enabled') == 'true';
     if (enabled) {
-      // Check if user is signed in
       try {
         final session = await Amplify.Auth.fetchAuthSession();
         if (session.isSignedIn) {
-          // User is signed in, ask for biometrics
           final localAuth = LocalAuthentication();
           try {
+            // Await the user's biometric input before updating state
             final didAuthenticate = await localAuth.authenticate(
               localizedReason: 'Please authenticate to access the app',
             );
+            if (didAuthenticate) {
+              await storage.delete(key: 'biometric_failed');
+            } else {
+              await storage.write(key: 'biometric_failed', value: 'true');
+            }
             setState(() {
               _unlocked = didAuthenticate;
               _checking = false;
+              _biometricFailed = !didAuthenticate;
             });
           } catch (e) {
+            await storage.write(key: 'biometric_failed', value: 'true');
             setState(() {
               _unlocked = false;
               _checking = false;
+              _biometricFailed = true;
             });
           }
         } else {
-          // Not signed in, unlock and let router handle navigation
+          await storage.delete(key: 'biometric_failed');
           setState(() {
             _unlocked = true;
             _checking = false;
+            _biometricFailed = false;
           });
         }
       } catch (e) {
-        // On error, treat as not signed in
+        await storage.delete(key: 'biometric_failed');
         setState(() {
           _unlocked = true;
           _checking = false;
+          _biometricFailed = false;
         });
       }
     } else {
+      await storage.delete(key: 'biometric_failed');
       setState(() {
         _unlocked = true;
         _checking = false;
+        _biometricFailed = false;
       });
     }
   }
@@ -95,10 +153,9 @@ class _BiometricGateState extends State<BiometricGate> {
   @override
   Widget build(BuildContext context) {
     if (_checking) {
-      // Show landing page with loading overlay
       return Stack(
         children: [
-          const LandingScreen(),
+          LandingScreen(biometricFailed: false, onBiometricRetry: null),
           const Scaffold(
             backgroundColor: Colors.black54,
             body: Center(child: CircularProgressIndicator()),
@@ -107,17 +164,18 @@ class _BiometricGateState extends State<BiometricGate> {
       );
     }
     if (!_unlocked) {
-      // Show landing page with biometrics failed message overlay
-      return Stack(
-        children: [
-          const LandingScreen(),
-          const Scaffold(
-            backgroundColor: Colors.black54,
-            body: Center(
-                child: Text('Biometric authentication failed',
-                    style: TextStyle(color: Colors.white, fontSize: 18))),
-          ),
-        ],
+      return LandingScreen(
+        biometricFailed: _biometricFailed,
+        onBiometricRetry: () async {
+          setState(() {
+            _checking = true;
+            _isRetryingBiometric = true;
+          });
+          await _checkAuthAndBiometrics();
+          setState(() {
+            _isRetryingBiometric = false;
+          });
+        },
       );
     }
     return widget.child;

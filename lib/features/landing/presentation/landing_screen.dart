@@ -5,7 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/widgets/logo_widget.dart';
 
 class LandingScreen extends ConsumerWidget {
-  const LandingScreen({super.key});
+  final bool biometricFailed;
+  final VoidCallback? onBiometricRetry;
+  const LandingScreen(
+      {super.key, this.biometricFailed = false, this.onBiometricRetry});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,6 +39,34 @@ class LandingScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    if (biometricFailed)
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Text(
+                              'Biometric authentication failed',
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.fingerprint, size: 24),
+                            label: const Text('Retry with biometrics'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(200, 50),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: onBiometricRetry,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
                     if (snapshot.connectionState == ConnectionState.waiting)
                       const SizedBox(
                           height: 50,
