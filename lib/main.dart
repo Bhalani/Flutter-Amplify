@@ -20,6 +20,8 @@ Future<void> _configureAmplify() async {
   try {
     await Amplify.addPlugin(AmplifyAuthCognito());
     await Amplify.configure(amplifyconfig);
+    await Amplify.Auth.signOut();
+
     debugPrint('Amplify configured successfully.');
   } on AmplifyAlreadyConfiguredException {
     debugPrint('Amplify is already configured.');
