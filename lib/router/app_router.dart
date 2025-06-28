@@ -97,9 +97,9 @@ final GoRouter appRouter = GoRouter(
         // Determine current index from location
         final location = state.location;
         int currentIndex = 0;
-        if (location.startsWith('/immobilienmiete'))
+        if (location.startsWith('/immobilienmiete')) {
           currentIndex = 1;
-        else if (location.startsWith('/money_manager'))
+        } else if (location.startsWith('/money_manager'))
           currentIndex = 2;
         else if (location.startsWith('/insurance'))
           currentIndex = 3;

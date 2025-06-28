@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_auth/main.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
 
 class VerifyEmailScreen extends ConsumerWidget {
@@ -39,10 +40,7 @@ class VerifyEmailScreen extends ConsumerWidget {
                       controller: emailController,
                       decoration: getPlatformInputDecoration('Email'),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) =>
-                          value == null || !value.contains('@')
-                              ? 'Enter a valid email'
-                              : null,
+                      validator: Validators.email,
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(

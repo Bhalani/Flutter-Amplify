@@ -1,5 +1,8 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   Future<SignUpResult> signUp(String email, String password, String firstName,
@@ -67,7 +70,7 @@ class AuthService {
   Future<ResetPasswordResult> resetPassword(String email) async {
     try {
       final result = await Amplify.Auth.resetPassword(username: email.trim());
-      debugPrint("Result: ${result}");
+      debugPrint("Result: $result");
       debugPrint(
           'Password reset code sent. Next step: \\${result.nextStep.updateStep}');
       return result;
@@ -85,7 +88,7 @@ class AuthService {
         newPassword: newPassword,
         confirmationCode: code,
       );
-      debugPrint('Result: ${result}');
+      debugPrint('Result: $result');
       debugPrint('Password reset confirmed.');
       return result;
     } catch (e) {
@@ -107,6 +110,32 @@ class AuthService {
     } on AuthException catch (e) {
       debugPrint('Error updating password: \\${e.message}');
       rethrow;
+    }
+  }
+
+  Future<void> sendUserDetailsToBackend({
+    required String firstName,
+    required String lastName,
+    required String email,
+  }) async {
+    final session = await Amplify.Auth.fetchAuthSession();
+    if (session is! CognitoAuthSession) {
+      debugPrint('Not a Cognito session, cannot send user details to backend.');
+    }
+    debugPrint("Sending detils to backend is being called: $email");
+    final response = await http.post(
+      Uri.parse('http://192.168.116.123:8080/users'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+      }),
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception('Failed to send user details: \\${response.statusCode}');
     }
   }
 }

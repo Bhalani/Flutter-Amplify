@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
 import 'package:amplify_auth/main.dart';
 
@@ -67,10 +68,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       controller: emailController,
                       decoration: getPlatformInputDecoration('Email'),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) =>
-                          value == null || !value.contains('@')
-                              ? 'Enter a valid email'
-                              : null,
+                      validator: Validators.email,
                       onSaved: (value) => email = value ?? '',
                       enabled: !isLoading,
                     ),

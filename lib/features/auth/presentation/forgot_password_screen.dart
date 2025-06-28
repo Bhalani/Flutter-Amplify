@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_auth/main.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -127,9 +128,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   controller: _emailController,
                   decoration: getPlatformInputDecoration('Email'),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value == null || !value.contains('@')
-                      ? 'Enter a valid email'
-                      : null,
+                  validator: Validators.email,
                   enabled: !codeSent,
                 ),
                 if (codeSent) ...[
@@ -137,18 +136,51 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   TextFormField(
                     controller: _codeController,
                     decoration: getPlatformInputDecoration('Verification Code'),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Enter the code sent to your email'
-                        : null,
+                    keyboardType: TextInputType.number,
+                    validator: Validators.code,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
                     decoration: getPlatformInputDecoration('New Password'),
                     obscureText: true,
-                    validator: (value) => value == null || value.length < 6
-                        ? 'Password must be at least 6 characters'
-                        : null,
+                    validator: Validators.password,
+                    onChanged: (value) {
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Builder(
+                    builder: (context) {
+                      final strength =
+                          Validators.passwordStrength(_passwordController.text);
+                      Color strengthColor;
+                      String strengthLabel;
+                      if (strength < 0.4) {
+                        strengthColor = Colors.red;
+                        strengthLabel = 'Weak';
+                      } else if (strength < 0.8) {
+                        strengthColor = Colors.orange;
+                        strengthLabel = 'Medium';
+                      } else {
+                        strengthColor = Colors.green;
+                        strengthLabel = 'Strong';
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          LinearProgressIndicator(
+                            value: strength,
+                            backgroundColor: Colors.grey[300],
+                            color: strengthColor,
+                            minHeight: 5,
+                          ),
+                          Text('Password strength: $strengthLabel',
+                              style: TextStyle(
+                                  color: strengthColor, fontSize: 12)),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

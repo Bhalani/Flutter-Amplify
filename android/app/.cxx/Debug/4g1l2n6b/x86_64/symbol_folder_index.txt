@@ -1,1 +1,0 @@
-/home/hiren/android_app/amplify_auth/build/app/intermediates/cxx/Debug/4g1l2n6b/obj/x86_64

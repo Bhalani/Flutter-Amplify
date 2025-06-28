@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../model/sync_result.dart';
@@ -9,34 +10,63 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService());
 
 class SyncService {
-  static const _apiUrl = 'http://localhost:3000/register';
+  static const _apiUrl = 'http://192.168.116.123:8080/transaction-link';
 
-  Future<SyncResult> sync() async {
-    final params = _generateRandomParams();
+  Future<String?> syncAndGetRedirectUrl() async {
     final token = await _getCognitoToken();
-    final response = await http.post(
-      Uri.parse(_apiUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(params),
-    );
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      return SyncResult(
-        userId: data['user_id'],
-        firstName: data['first_name'],
-        lastName: data['last_name'],
-        email: data['email'],
+    debugPrint("Calling POST /transaction-link with no body");
+    try {
+      final response = await http.post(
+        Uri.parse(_apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
-    } else if (response.statusCode == 401) {
-      throw Exception('Unauthorized');
-    } else if (response.statusCode == 422) {
-      final data = jsonDecode(response.body);
-      throw Exception('Validation error: ${data['errors']}');
-    } else {
-      throw Exception('Server error: ${response.statusCode}');
+      debugPrint('Response status: ${response}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        debugPrint('Response data: $data');
+        // Expecting a field like 'url' in the response
+        return data['url'] as String?;
+      } else {
+        debugPrint('Sync API error: \\${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Network error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, String>> syncAndGetUrls() async {
+    final token = await _getCognitoToken();
+    debugPrint("Calling POST /transaction-link with no body");
+    try {
+      final response = await http.post(
+        Uri.parse(_apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      debugPrint('Response status: \\${response.statusCode}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        debugPrint('Response data: $data');
+        final url = data['url'] as String?;
+        final callbackUrl = data['callback_url'] as String?;
+        if (url == null || callbackUrl == null) {
+          throw Exception('Missing url or callback_url from backend');
+        }
+        return {'url': url, 'callback_url': callbackUrl};
+      } else {
+        debugPrint('Sync API error: \\${response.statusCode}');
+        throw Exception('Sync API error: \\${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Network error: $e');
+      rethrow;
     }
   }
 
@@ -55,10 +85,13 @@ class SyncService {
     };
   }
 
+  Map<String, String> generateRandomParams() => _generateRandomParams();
+
   Future<String> _getCognitoToken() async {
     final session = await Amplify.Auth.fetchAuthSession();
-    if (session is! CognitoAuthSession)
+    if (session is! CognitoAuthSession) {
       throw Exception('Not a Cognito session');
+    }
     if (!session.isSignedIn) throw Exception('Not signed in');
     return session.userPoolTokensResult.value.idToken.raw;
   }

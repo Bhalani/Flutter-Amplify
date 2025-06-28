@@ -14,6 +14,9 @@ final authStateProvider =
 
 final userEmailProvider = StateNotifierProvider<UserEmailNotifier, String?>(
     (ref) => UserEmailNotifier());
+final signUpUserDetailsProvider =
+    StateProvider<({String firstName, String lastName, String email})?>(
+        (ref) => null);
 
 class UserEmailNotifier extends StateNotifier<String?> {
   UserEmailNotifier() : super(null) {
@@ -67,8 +70,14 @@ Future<void> signUpUser(WidgetRef ref, BuildContext context, String email,
     final result =
         await authService.signUp(email, password, firstName, familyName);
     await ref.read(userEmailProvider.notifier).setEmail(email);
+    // Store user details for later use in verification
+    ref.read(signUpUserDetailsProvider.notifier).state = (
+      firstName: firstName,
+      lastName: familyName,
+      email: email,
+    );
 
-    print('result: ${result}');
+    print('result: $result');
     print('result.nextStep: ${result.nextStep}');
     print('result.nextStep.signUpStep: ${result.nextStep.signUpStep}');
     if (result.nextStep.signUpStep == AuthSignUpStep.confirmSignUp) {
@@ -118,7 +127,7 @@ Future<void> confirmSignUp(
           ? 'Confirmation successful! Please sign in.'
           : 'Confirmation incomplete. Try again.',
     );
-    print('Confirmation result: ${result}');
+    print('Confirmation result: $result');
   } catch (e) {
     ref.read(authStateProvider.notifier).state = AuthState(
       isSignedIn: false,
@@ -225,4 +234,18 @@ Future<void> updatePasswordProvider(
     );
     rethrow;
   }
+}
+
+Future<void> sendUserDetailsToBackendProvider(
+  WidgetRef ref, {
+  required String firstName,
+  required String lastName,
+  required String email,
+}) async {
+  final authService = ref.read(authServiceProvider);
+  await authService.sendUserDetailsToBackend(
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+  );
 }

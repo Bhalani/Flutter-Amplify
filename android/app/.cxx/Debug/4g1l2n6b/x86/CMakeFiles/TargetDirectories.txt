@@ -1,2 +1,0 @@
-/home/hiren/android_app/amplify_auth/android/app/.cxx/Debug/4g1l2n6b/x86/CMakeFiles/edit_cache.dir
-/home/hiren/android_app/amplify_auth/android/app/.cxx/Debug/4g1l2n6b/x86/CMakeFiles/rebuild_cache.dir

@@ -49,5 +49,16 @@
 	<string>This app uses Face ID to authenticate the user securely.</string>
 	<key>NSLocalAuthenticationUsageDescription</key>
 	<string>This app uses biometrics to authenticate the user securely.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>treuewert</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.yourcompany.treuewert</string>
+		</dict>
+	</array>
 </dict>
 </plist>

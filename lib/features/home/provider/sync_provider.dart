@@ -11,13 +11,17 @@ class SyncNotifier extends StateNotifier<AsyncValue<SyncResult?>> {
   final Ref ref;
   SyncNotifier(this.ref) : super(const AsyncValue.data(null));
 
-  Future<void> sync() async {
-    state = const AsyncValue.loading();
+  Future<String?> syncAndGetRedirectUrl() async {
+    return await ref.read(syncServiceProvider).syncAndGetRedirectUrl();
+  }
+
+  Future<Map<String, String>?> syncAndGetUrls() async {
     try {
-      final result = await ref.read(syncServiceProvider).sync();
-      state = AsyncValue.data(result);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      return await ref.read(syncServiceProvider).syncAndGetUrls();
+    } catch (e) {
+      return null;
     }
   }
 }
+
+final syncWebViewCloseProvider = StateProvider<bool>((ref) => false);

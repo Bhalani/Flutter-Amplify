@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_auth/main.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
 
 class VerificationCodeScreen extends ConsumerWidget {
@@ -56,9 +57,8 @@ class VerificationCodeScreen extends ConsumerWidget {
                       decoration:
                           getPlatformInputDecoration('Verification Code'),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Enter the verification code'
-                          : null,
+                      textAlign: TextAlign.center, // Center the input
+                      validator: Validators.code,
                       onSaved: (value) => confirmationCode = value ?? '',
                     ),
                     const SizedBox(height: 16),
@@ -78,6 +78,31 @@ class VerificationCodeScreen extends ConsumerWidget {
                             final message = ref.read(authStateProvider).message;
 
                             if (isSignUpComplete) {
+                              // Only send user details to backend if coming from sign up
+                              if (fromSignUp) {
+                                try {
+                                  final details =
+                                      ref.read(signUpUserDetailsProvider);
+                                  final firstName = details?.firstName ?? '';
+                                  final lastName = details?.lastName ?? '';
+                                  final emailVal = details?.email ?? email;
+                                  debugPrint(
+                                      "Sending detils to backend is being called");
+                                  await sendUserDetailsToBackendProvider(
+                                    ref,
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    email: emailVal,
+                                  );
+                                  // Clear the provider after use
+                                  ref
+                                      .read(signUpUserDetailsProvider.notifier)
+                                      .state = null;
+                                } catch (e) {
+                                  debugPrint(
+                                      'Failed to send user details to backend: $e');
+                                }
+                              }
                               showGentleSnackBar(
                                   context, 'Email verified successfully!',
                                   type: SnackBarType.success);
@@ -118,27 +143,28 @@ class VerificationCodeScreen extends ConsumerWidget {
                           ),
                         if (!fromSignUp) const SizedBox(width: 12),
                         Expanded(
-                          child: TextButton(
-                            onPressed: () async {
-                              try {
-                                await resendVerificationCode(ref, email);
-                                showGentleSnackBar(
-                                    context, 'Verification code sent!',
-                                    type: SnackBarType.success);
-                              } catch (e) {
-                                showGentleSnackBar(context, 'Error: $e',
-                                    type: SnackBarType.error);
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              textStyle: const TextStyle(
-                                  decoration: TextDecoration.underline),
-                            ),
-                            child: const Align(
-                              alignment: Alignment.centerRight,
-                              child: Text('Resend Code'),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () async {
+                                try {
+                                  await resendVerificationCode(ref, email);
+                                  showGentleSnackBar(
+                                      context, 'Verification code sent!',
+                                      type: SnackBarType.success);
+                                } catch (e) {
+                                  showGentleSnackBar(context, 'Error: $e',
+                                      type: SnackBarType.error);
+                                }
+                              },
+                              child: const Text(
+                                'Resend Code',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
                           ),
                         ),

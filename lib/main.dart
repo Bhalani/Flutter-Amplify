@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,8 @@ import 'amplifyconfiguration.dart';
 import 'router/app_router.dart';
 import 'core/constants/ui_constants.dart';
 import 'features/landing/presentation/landing_screen.dart';
+import 'package:app_links/app_links.dart';
+import 'features/home/provider/sync_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,11 +48,35 @@ class _BiometricGateState extends State<BiometricGate>
   bool _biometricFailed = false;
   bool _isRetryingBiometric = false;
 
+  StreamSubscription? _linkSub;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _secureStartupCheck();
+    _initDeepLinkListener();
+  }
+
+  void _initDeepLinkListener() {
+    final appLinks = AppLinks();
+
+    // Listen to app links while the app is running
+    _linkSub = appLinks.uriLinkStream.listen((uri) {
+      if (uri.scheme == 'treuewert' && uri.host == 'callback') {
+        debugPrint('Received callback: $uri');
+        if (mounted) {
+          try {
+            final container = ProviderScope.containerOf(context, listen: false);
+            container.read(syncWebViewCloseProvider.notifier).state = true;
+          } catch (e) {
+            debugPrint('Error handling deep link callback: $e');
+          }
+        }
+      }
+    }, onError: (err) {
+      debugPrint('Deep link error: $err');
+    });
   }
 
   Future<void> _secureStartupCheck() async {
@@ -86,6 +113,7 @@ class _BiometricGateState extends State<BiometricGate>
 
   @override
   void dispose() {
+    _linkSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
