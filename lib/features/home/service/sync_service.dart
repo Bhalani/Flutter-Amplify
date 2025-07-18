@@ -23,7 +23,7 @@ class SyncService {
           'Authorization': 'Bearer $token',
         },
       );
-      debugPrint('Response status: ${response}');
+      debugPrint('Response status: $response');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         debugPrint('Response data: $data');

@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final syncUrlAsync = ref.watch(syncUrlProvider);
+    // Do not call syncUrlProvider on screen load
     return Stack(
       children: [
         Center(
@@ -56,25 +56,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: syncUrlAsync.isLoading
-                    ? null
-                    : () async {
-                        final url = await ref.read(syncUrlProvider.future);
-                        if (url != null) {
-                          _openWebView(url);
-                        } else {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Failed to get sync URL from backend.')),
-                            );
-                          }
-                        }
-                      },
-                child: syncUrlAsync.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Sync'),
+                onPressed: () async {
+                  setState(() {
+                    // Optionally show loading indicator
+                  });
+                  final url = await ref.read(syncUrlProvider.future);
+                  if (url != null) {
+                    _openWebView(url);
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text('Failed to get sync URL from backend.')),
+                      );
+                    }
+                  }
+                  setState(() {
+                    // Optionally hide loading indicator
+                  });
+                },
+                child: const Text('Sync'),
               ),
             ],
           ),
