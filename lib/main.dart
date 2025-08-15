@@ -9,6 +9,7 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'amplifyconfiguration.dart';
 import 'router/app_router.dart';
 import 'core/constants/ui_constants.dart';
+import 'core/widgets/deep_link_initializer.dart';
 import 'features/landing/presentation/landing_screen.dart';
 
 void main() async {
@@ -21,7 +22,6 @@ Future<void> _configureAmplify() async {
   try {
     await Amplify.addPlugin(AmplifyAuthCognito());
     await Amplify.configure(amplifyconfig);
-    await Amplify.Auth.signOut();
 
     debugPrint('Amplify configured successfully.');
   } on AmplifyAlreadyConfiguredException {
@@ -57,32 +57,39 @@ class _BiometricGateState extends State<BiometricGate>
     final storage = const FlutterSecureStorage();
     final biometricsEnabled =
         await storage.read(key: 'biometrics_enabled') == 'true';
-    final biometricFailedFlag =
-        await storage.read(key: 'biometric_failed') == 'true';
     try {
       final session = await Amplify.Auth.fetchAuthSession();
-      if (!biometricsEnabled && session.isSignedIn) {
-        await Amplify.Auth.signOut();
-        await storage.delete(key: 'biometric_failed');
-        if (mounted) setState(() {});
-        return;
-      }
-      // Only skip prompt if fail flag is set and not retrying
-      if (biometricsEnabled &&
-          session.isSignedIn &&
-          biometricFailedFlag &&
-          !_isRetryingBiometric) {
+      if (session.isSignedIn) {
+        if (biometricsEnabled) {
+          // Always prompt for biometrics if enabled
+          await _checkAuthAndBiometrics();
+        } else {
+          // If biometrics not enabled, log out and clear flag
+          // await Amplify.Auth.signOut(); Enable it laster for final version
+          await storage.delete(key: 'biometric_failed');
+          setState(() {
+            _unlocked = false;
+            _checking = false;
+            _biometricFailed = false;
+          });
+        }
+      } else {
+        debugPrint("biometricsEnabled: \\$biometricsEnabled");
+        // Not signed in, allow access to child (login/register)
         setState(() {
-          _unlocked = false;
+          _unlocked = true;
           _checking = false;
-          _biometricFailed = true;
+          _biometricFailed = false;
         });
-        return;
       }
     } catch (e) {
-      // Ignore errors
+      // On error, allow access to child (login/register)
+      setState(() {
+        _unlocked = true;
+        _checking = false;
+        _biometricFailed = false;
+      });
     }
-    _checkAuthAndBiometrics();
   }
 
   @override
@@ -98,44 +105,34 @@ class _BiometricGateState extends State<BiometricGate>
 
   Future<void> _checkAuthAndBiometrics() async {
     final storage = const FlutterSecureStorage();
-    final enabled = await storage.read(key: 'biometrics_enabled') == 'true';
-    if (enabled) {
-      try {
-        final session = await Amplify.Auth.fetchAuthSession();
-        if (session.isSignedIn) {
-          final localAuth = LocalAuthentication();
-          try {
-            // Await the user's biometric input before updating state
-            final didAuthenticate = await localAuth.authenticate(
-              localizedReason: 'Please authenticate to access the app',
-            );
-            if (didAuthenticate) {
-              await storage.delete(key: 'biometric_failed');
-            } else {
-              await storage.write(key: 'biometric_failed', value: 'true');
-            }
-            setState(() {
-              _unlocked = didAuthenticate;
-              _checking = false;
-              _biometricFailed = !didAuthenticate;
-            });
-          } catch (e) {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (session.isSignedIn) {
+        final localAuth = LocalAuthentication();
+        try {
+          final didAuthenticate = await localAuth.authenticate(
+            localizedReason: 'Please authenticate to access the app',
+          );
+          if (didAuthenticate) {
+            await storage.delete(key: 'biometric_failed');
+          } else {
             await storage.write(key: 'biometric_failed', value: 'true');
-            setState(() {
-              _unlocked = false;
-              _checking = false;
-              _biometricFailed = true;
-            });
           }
-        } else {
-          await storage.delete(key: 'biometric_failed');
           setState(() {
-            _unlocked = true;
+            _unlocked = didAuthenticate;
             _checking = false;
-            _biometricFailed = false;
+            _biometricFailed = !didAuthenticate;
+          });
+        } catch (e) {
+          await storage.write(key: 'biometric_failed', value: 'true');
+          setState(() {
+            _unlocked = false;
+            _checking = false;
+            _biometricFailed = true;
           });
         }
-      } catch (e) {
+      } else {
+        // Not signed in, allow access to child (login/register)
         await storage.delete(key: 'biometric_failed');
         setState(() {
           _unlocked = true;
@@ -143,7 +140,7 @@ class _BiometricGateState extends State<BiometricGate>
           _biometricFailed = false;
         });
       }
-    } else {
+    } catch (e) {
       await storage.delete(key: 'biometric_failed');
       setState(() {
         _unlocked = true;
@@ -239,10 +236,8 @@ class AmplifyAuthApp extends StatelessWidget {
             }),
             maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
               if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 90% width
                 return Size(MediaQuery.of(context).size.width * 0.9, 50);
               } else {
-                // Tablet view: Fixed size
                 return const Size(350, 50);
               }
             }),
@@ -276,7 +271,7 @@ class AmplifyAuthApp extends StatelessWidget {
               }
             }),
             side: WidgetStateProperty.all(
-              BorderSide(color: UIConstants.primaryColor, width: 2),
+              BorderSide(color: UIConstants.primaryColor, width: 1),
             ),
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
@@ -292,7 +287,9 @@ class AmplifyAuthApp extends StatelessWidget {
         ),
       ),
       routerConfig: appRouter,
-      builder: (context, child) => BiometricGate(child: child!),
+      builder: (context, child) => DeepLinkInitializer(
+        child: BiometricGate(child: child!),
+      ),
     );
   }
 }

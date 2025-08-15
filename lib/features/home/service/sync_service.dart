@@ -3,14 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import '../model/sync_result.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService());
 
 class SyncService {
-  static const _apiUrl = 'http://192.168.116.123:8080/transaction-link';
+  static const _apiUrl =
+      'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transaction-link';
 
   Future<String?> syncAndGetRedirectUrl() async {
     final token = await _getCognitoToken();

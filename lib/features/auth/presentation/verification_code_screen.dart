@@ -79,30 +79,33 @@ class VerificationCodeScreen extends ConsumerWidget {
 
                             if (isSignUpComplete) {
                               // Only send user details to backend if coming from sign up
-                              if (fromSignUp) {
-                                try {
-                                  final details =
-                                      ref.read(signUpUserDetailsProvider);
-                                  final firstName = details?.firstName ?? '';
-                                  final lastName = details?.lastName ?? '';
-                                  final emailVal = details?.email ?? email;
-                                  debugPrint(
-                                      "Sending detils to backend is being called");
-                                  await sendUserDetailsToBackendProvider(
-                                    ref,
-                                    firstName: firstName,
-                                    lastName: lastName,
-                                    email: emailVal,
-                                  );
-                                  // Clear the provider after use
-                                  ref
-                                      .read(signUpUserDetailsProvider.notifier)
-                                      .state = null;
-                                } catch (e) {
-                                  debugPrint(
-                                      'Failed to send user details to backend: $e');
-                                }
-                              }
+                              // if (fromSignUp) {
+                              //   try {
+                              //     final details =
+                              //         ref.read(signUpUserDetailsProvider);
+                              //     final firstName = details?.firstName ?? '';
+                              //     final lastName = details?.lastName ?? '';
+                              //     final emailVal = details?.email ?? email;
+                              //     debugPrint(
+                              //         "Sending detils to backend is being called");
+                              //     // Commenting out the call to sendUserDetailsToBackendProvider
+                              //     /*
+                              //     await sendUserDetailsToBackendProvider(
+                              //       ref,
+                              //       firstName: firstName,
+                              //       lastName: lastName,
+                              //       email: emailVal,
+                              //     );
+                              //     */
+                              //     // Clear the provider after use
+                              //     ref
+                              //         .read(signUpUserDetailsProvider.notifier)
+                              //         .state = null;
+                              //   } catch (e) {
+                              //     debugPrint(
+                              //         'Failed to send user details to backend: $e');
+                              //   }
+                              // }
                               showGentleSnackBar(
                                   context, 'Email verified successfully!',
                                   type: SnackBarType.success);

@@ -86,7 +86,9 @@ class LandingScreen extends ConsumerWidget {
                     else if (snapshot.connectionState == ConnectionState.done)
                       ElevatedButton(
                         onPressed: () {
-                          context.go('/sign_up');
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            context.go('/sign_up');
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(200, 50),
@@ -96,7 +98,9 @@ class LandingScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     OutlinedButton(
                       onPressed: () {
-                        context.go('/about_us');
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          context.go('/about_us');
+                        });
                       },
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(200, 50),

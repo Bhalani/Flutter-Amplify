@@ -113,29 +113,29 @@ class AuthService {
     }
   }
 
-  Future<void> sendUserDetailsToBackend({
-    required String firstName,
-    required String lastName,
-    required String email,
-  }) async {
-    final session = await Amplify.Auth.fetchAuthSession();
-    if (session is! CognitoAuthSession) {
-      debugPrint('Not a Cognito session, cannot send user details to backend.');
-    }
-    debugPrint("Sending detils to backend is being called: $email");
-    final response = await http.post(
-      Uri.parse('http://192.168.116.123:8080/users'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-      }),
-    );
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception('Failed to send user details: \\${response.statusCode}');
-    }
-  }
+  // Future<void> sendUserDetailsToBackend({
+  //   required String firstName,
+  //   required String lastName,
+  //   required String email,
+  // }) async {
+  //   final session = await Amplify.Auth.fetchAuthSession();
+  //   if (session is! CognitoAuthSession) {
+  //     debugPrint('Not a Cognito session, cannot send user details to backend.');
+  //   }
+  //   debugPrint("Sending detils to backend is being called: $email");
+  //   final response = await http.post(
+  //     Uri.parse('http://192.168.116.236:8080/users'),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: jsonEncode({
+  //       'first_name': firstName,
+  //       'last_name': lastName,
+  //       'email': email,
+  //     }),
+  //   );
+  //   if (response.statusCode != 201 && response.statusCode != 200) {
+  //     throw Exception('Failed to send user details: \\${response.statusCode}');
+  //   }
+  // }
 }

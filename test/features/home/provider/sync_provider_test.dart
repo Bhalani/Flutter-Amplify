@@ -3,9 +3,9 @@ import 'package:amplify_auth/features/home/provider/sync_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  test('syncProvider exposes initial state', () async {
+  test('syncUrlProvider exposes initial state', () async {
     final container = ProviderContainer();
-    final state = container.read(syncProvider);
+    final state = container.read(syncUrlProvider);
     expect(state, isNotNull);
   });
 }

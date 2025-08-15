@@ -236,16 +236,16 @@ Future<void> updatePasswordProvider(
   }
 }
 
-Future<void> sendUserDetailsToBackendProvider(
-  WidgetRef ref, {
-  required String firstName,
-  required String lastName,
-  required String email,
-}) async {
-  final authService = ref.read(authServiceProvider);
-  await authService.sendUserDetailsToBackend(
-    firstName: firstName,
-    lastName: lastName,
-    email: email,
-  );
-}
+// Future<void> sendUserDetailsToBackendProvider(
+//   WidgetRef ref, {
+//   required String firstName,
+//   required String lastName,
+//   required String email,
+// }) async {
+//   final authService = ref.read(authServiceProvider);
+//   await authService.sendUserDetailsToBackend(
+//     firstName: firstName,
+//     lastName: lastName,
+//     email: email,
+//   );
+// }

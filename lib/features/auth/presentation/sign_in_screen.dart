@@ -23,6 +23,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize email controller - will auto-fill if user has previous email stored
     emailController = TextEditingController();
   }
 
@@ -34,10 +35,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Auto-fill email from stored value, but user can change it
     final userEmail = ref.watch(userEmailProvider);
-    if (userEmail != null && userEmail != emailController.text) {
+    if (userEmail != null && emailController.text.isEmpty) {
       emailController.text = userEmail;
     }
+
     return Scaffold(
       appBar: AppBar(
         title: const LogoWidget(),
@@ -117,9 +120,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                                 formKey.currentState?.save();
                                 setState(() => isLoading = true);
                                 try {
+                                  // Use the current text in email controller (what user actually typed)
+                                  final currentEmail =
+                                      emailController.text.trim();
                                   await signInUser(
                                     ref,
-                                    email,
+                                    currentEmail, // Use controller value, not form saved value
                                     password,
                                   );
                                   if (ref.read(authStateProvider).isSignedIn) {
