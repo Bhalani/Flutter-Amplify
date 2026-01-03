@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow AWS Cognito endpoints -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">cognito-idp.ap-south-1.amazonaws.com</domain>
+        <domain includeSubdomains="true">cognito-identity.ap-south-1.amazonaws.com</domain>
+        <domain includeSubdomains="true">amazonaws.com</domain>
+        <domain includeSubdomains="true">amplifyapp.com</domain>
+
+        <!-- API Gateway endpoints -->
+        <domain includeSubdomains="true">execute-api.ap-south-1.amazonaws.com</domain>
+        <domain includeSubdomains="true">rh1k6y8abj.execute-api.ap-south-1.amazonaws.com</domain>
+
+        <!-- General AWS API endpoints -->
+        <domain includeSubdomains="true">api.amazonaws.com</domain>
+        <domain includeSubdomains="true">apigateway.ap-south-1.amazonaws.com</domain>
+    </domain-config>
+
+    <!-- Base configuration for HTTPS only -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- Debug configuration (only applies in debug builds) -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

@@ -14,7 +14,10 @@ class SyncService {
 
   Future<String?> syncAndGetRedirectUrl() async {
     final token = await _getCognitoToken();
-    debugPrint("Calling POST /transaction-link with no body");
+    debugPrint("🔗 Calling API Gateway POST /transaction-link");
+    debugPrint("🔑 Token: ${token.isNotEmpty ? 'Present' : 'Missing'}");
+    debugPrint("🌐 API URL: $_apiUrl");
+
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),
@@ -23,18 +26,31 @@ class SyncService {
           'Authorization': 'Bearer $token',
         },
       );
-      debugPrint('Response status: $response');
+
+      debugPrint('✅ API Gateway Response Status: ${response.statusCode}');
+      debugPrint('📋 Response Headers: ${response.headers}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        debugPrint('Response data: $data');
+        debugPrint('📦 Response Data: $data');
         // Expecting a field like 'url' in the response
         return data['url'] as String?;
       } else {
-        debugPrint('Sync API error: \\${response.statusCode}');
+        debugPrint('❌ API Gateway Error: ${response.statusCode}');
+        debugPrint('📄 Error Body: ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('Network error: $e');
+      debugPrint('🌐 Network Error Details: $e');
+      debugPrint('🔍 Error Type: ${e.runtimeType}');
+
+      // Check for specific network issues
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection failed')) {
+        debugPrint(
+            '🚨 API Gateway Connection Failed - Check network security config');
+      }
+
       return null;
     }
   }

@@ -52,14 +52,14 @@ class TransactionList extends ConsumerWidget {
               final isIncome = txn.type == 'income' || txn.amount > 0;
               // Use txn.type for initials and color
               String type = txn.type;
-              String initials = type.isNotEmpty
-                  ? type
-                      .split(' ')
-                      .map((w) => w[0])
-                      .take(2)
-                      .join()
-                      .toUpperCase()
-                  : 'T';
+              // String initials = type.isNotEmpty
+              //     ? type
+              //         .split(' ')
+              //         .map((w) => w[0])
+              //         .take(2)
+              //         .join()
+              //         .toUpperCase()
+              //     : 'T';
               Color avatarColor;
               switch (type.toLowerCase()) {
                 case 'salary':

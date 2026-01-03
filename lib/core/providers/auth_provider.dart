@@ -66,10 +66,18 @@ class AuthState {
 Future<void> signUpUser(WidgetRef ref, BuildContext context, String email,
     String password, String firstName, String familyName) async {
   final authService = ref.read(authServiceProvider);
+
+  debugPrint('🚀 Starting sign-up for email: $email');
+  debugPrint('🚀 Amplify configured: ${Amplify.isConfigured}');
+
   try {
+    // Test network connectivity first
+    debugPrint('🌐 Testing network connectivity...');
+
     final result =
         await authService.signUp(email, password, firstName, familyName);
     await ref.read(userEmailProvider.notifier).setEmail(email);
+
     // Store user details for later use in verification
     ref.read(signUpUserDetailsProvider.notifier).state = (
       firstName: firstName,
@@ -77,9 +85,9 @@ Future<void> signUpUser(WidgetRef ref, BuildContext context, String email,
       email: email,
     );
 
-    print('result: $result');
-    print('result.nextStep: ${result.nextStep}');
-    print('result.nextStep.signUpStep: ${result.nextStep.signUpStep}');
+    debugPrint('✅ Sign-up successful: $result');
+    debugPrint('✅ Next step: ${result.nextStep.signUpStep}');
+
     if (result.nextStep.signUpStep == AuthSignUpStep.confirmSignUp) {
       ref.read(authStateProvider.notifier).state = AuthState(
         isSignedIn: false,
@@ -96,15 +104,35 @@ Future<void> signUpUser(WidgetRef ref, BuildContext context, String email,
       );
     }
   } catch (e) {
-    // Try to extract a meaningful message from the exception string
+    debugPrint('❌ Sign-up error: $e');
+    debugPrint('❌ Error type: ${e.runtimeType}');
+
+    // Enhanced error handling for network issues
     String errorMsg = e.toString();
-    final messageMatch = RegExp(r'"message":\s*"([^"]+)"').firstMatch(errorMsg);
-    if (messageMatch != null) {
-      errorMsg = messageMatch.group(1)!;
+
+    // Check for specific network-related errors
+    if (errorMsg.contains('NetworkException') ||
+        errorMsg.contains('SocketException') ||
+        errorMsg.contains('HttpException') ||
+        errorMsg.contains('Connection failed') ||
+        errorMsg.contains('No address associated with hostname')) {
+      errorMsg =
+          'Network error 🌐: Please check your internet connection and try again.';
+      debugPrint('🌐 Network connectivity issue detected');
+    } else if (errorMsg.contains('TimeoutException')) {
+      errorMsg = 'Connection timeout: Please try again.';
     } else {
-      // Fallback: remove 'Exception: ' prefix if present
-      errorMsg = errorMsg.replaceFirst(RegExp(r'^Exception: '), '');
+      // Try to extract a meaningful message from the exception string
+      final messageMatch =
+          RegExp(r'"message":\s*"([^"]+)"').firstMatch(errorMsg);
+      if (messageMatch != null) {
+        errorMsg = messageMatch.group(1)!;
+      } else {
+        // Fallback: remove 'Exception: ' prefix if present
+        errorMsg = errorMsg.replaceFirst(RegExp(r'^Exception: '), '');
+      }
     }
+
     ref.read(authStateProvider.notifier).state = AuthState(
       isSignedIn: false,
       isSignUpComplete: false,

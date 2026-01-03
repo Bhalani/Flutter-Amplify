@@ -1,26 +1,37 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class AuthService {
   Future<SignUpResult> signUp(String email, String password, String firstName,
       String familyName) async {
     try {
+      debugPrint('🔧 Attempting Amplify.Auth.signUp...');
+      debugPrint('🔧 Email: $email');
+      debugPrint('🔧 Amplify configured: ${Amplify.isConfigured}');
+
       final userAttributes = {
         AuthUserAttributeKey.email: email,
         AuthUserAttributeKey.name: firstName,
         AuthUserAttributeKey.familyName: familyName,
       };
 
-      return await Amplify.Auth.signUp(
+      final result = await Amplify.Auth.signUp(
         username: email.trim().toLowerCase(),
         password: password,
         options: SignUpOptions(userAttributes: userAttributes),
       );
+
+      debugPrint('🎉 Auth.signUp successful!');
+      return result;
+    } on AuthException catch (e) {
+      debugPrint('❌ AuthException during sign-up: ${e.message}');
+      debugPrint('❌ Recovery suggestion: ${e.recoverySuggestion}');
+      debugPrint('❌ Underlyling exception: ${e.underlyingException}');
+      rethrow;
     } catch (e) {
-      debugPrint('Error during sign-up: $e');
+      debugPrint('❌ Unknown error during sign-up: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
       rethrow;
     }
   }

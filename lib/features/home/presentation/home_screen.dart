@@ -8,7 +8,6 @@ import '../../../core/services/deep_link_service.dart';
 
 import '../../../core/constants/ui_constants.dart';
 import '../provider/transaction_provider.dart';
-import '../model/account_summary.dart';
 import 'account_summary_card.dart';
 import 'transaction_list.dart';
 

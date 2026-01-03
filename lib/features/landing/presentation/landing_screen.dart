@@ -14,7 +14,7 @@ class LandingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<SharedPreferences>(
       future: SharedPreferences.getInstance(),
-      builder: (context, snapshot) {
+      builder: (builderContext, snapshot) {
         final prefs = snapshot.data;
         final userEmail = prefs?.getString('user_email');
         return Scaffold(
@@ -27,8 +27,8 @@ class LandingScreen extends ConsumerWidget {
                   child: Image.asset(
                     'assets/images/background.png',
                     fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width < 600
-                        ? MediaQuery.of(context).size.width * 0.9
+                    width: MediaQuery.of(builderContext).size.width < 600
+                        ? MediaQuery.of(builderContext).size.width * 0.9
                         : 500,
                     height: null, // Set height to auto
                   ),
@@ -59,7 +59,7 @@ class LandingScreen extends ConsumerWidget {
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(200, 50),
                               backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
+                                  Theme.of(builderContext).colorScheme.primary,
                               foregroundColor: Colors.white,
                             ),
                             onPressed: onBiometricRetry,
@@ -74,38 +74,49 @@ class LandingScreen extends ConsumerWidget {
                     if (snapshot.connectionState == ConnectionState.done &&
                         userEmail != null &&
                         userEmail.isNotEmpty)
-                      ElevatedButton(
-                        onPressed: () {
-                          context.go('/sign_in');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(200, 50),
+                      Builder(
+                        builder: (btnContext) => ElevatedButton(
+                          onPressed: () {
+                            // Use Future.delayed to ensure context is ready
+                            Future.delayed(Duration.zero, () {
+                              GoRouter.of(context).go('/sign_in');
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(200, 50),
+                          ),
+                          child: const Text('Login'),
                         ),
-                        child: const Text('Login'),
                       )
                     else if (snapshot.connectionState == ConnectionState.done)
-                      ElevatedButton(
-                        onPressed: () {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            context.go('/sign_up');
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(200, 50),
+                      Builder(
+                        builder: (btnContext) => ElevatedButton(
+                          onPressed: () {
+                            // Use Future.delayed to ensure context is ready
+                            Future.delayed(Duration.zero, () {
+                              GoRouter.of(context).go('/sign_up');
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(200, 50),
+                          ),
+                          child: const Text('Register'),
                         ),
-                        child: const Text('Register'),
                       ),
                     const SizedBox(height: 16),
-                    OutlinedButton(
-                      onPressed: () {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          context.go('/about_us');
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(200, 50),
+                    Builder(
+                      builder: (btnContext) => OutlinedButton(
+                        onPressed: () {
+                          // Use Future.delayed to ensure context is ready
+                          Future.delayed(Duration.zero, () {
+                            GoRouter.of(context).go('/about_us');
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(200, 50),
+                        ),
+                        child: const Text('About us'),
                       ),
-                      child: const Text('About us'),
                     ),
                     const SizedBox(height: 16),
                   ],

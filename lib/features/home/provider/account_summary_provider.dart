@@ -13,26 +13,30 @@ final accountSummaryProvider = FutureProvider<AccountSummary>((ref) async {
   final session = await Amplify.Auth.fetchAuthSession();
   if (session is CognitoAuthSession) {
     final idToken = session.userPoolTokensResult.value.idToken.raw;
-    debugPrint("\n\n\n\n ID Token: $idToken \n\n\n\n");
+    const apiUrl =
+        'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transactions/summary';
+
+    debugPrint("🏦 Fetching Account Summary from API Gateway");
+    debugPrint("🔑 Token: ${idToken.isNotEmpty ? 'Present' : 'Missing'}");
+    debugPrint("🌐 API URL: $apiUrl");
+
     try {
       final response = await http.get(
-        Uri.parse(
-            'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transactions/summary'),
+        Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',
         },
       );
 
+      debugPrint("✅ API Gateway Response Status: ${response.statusCode}");
+
       if (response.statusCode == 200) {
-        debugPrint("\n\n\n\n=====================");
-        debugPrint("Account summary fetched successfully.");
-        debugPrint("Response body: ${response.body}");
-        debugPrint("=====================\n\n\n\n");
+        debugPrint("📦 Account Summary Response: ${response.body}");
         final jsonData = json.decode(response.body);
         return AccountSummary.fromJson(jsonData);
       } else if (response.statusCode == 204) {
-        debugPrint("No account summary data found");
+        debugPrint("📭 No account summary data found (204)");
         // Set message for UI to show
         ref.read(accountSummaryMessageProvider.notifier).state =
             "No account data found. Start by adding some transactions!";
@@ -45,13 +49,27 @@ final accountSummaryProvider = FutureProvider<AccountSummary>((ref) async {
           currencyCode: 'USD',
         );
       } else {
-        debugPrint(
-            "Failed to fetch account summary. Status code: ${response.statusCode}");
-        throw Exception('Failed to load account summary');
+        debugPrint("❌ API Gateway Error: ${response.statusCode}");
+        debugPrint("📄 Error Body: ${response.body}");
+        throw Exception(
+            'Failed to load account summary: HTTP ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('\n\n\n\nError fetching account summary: $e\n\n\n\n');
-      throw Exception('Error fetching account summary: $e');
+      debugPrint('🌐 API Gateway Error Details: $e');
+      debugPrint('🔍 Error Type: ${e.runtimeType}');
+
+      // Check for specific network issues with API Gateway
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection failed')) {
+        debugPrint(
+            '🚨 API Gateway Connection Failed - Check network security config');
+        throw Exception(
+            'Network error: Cannot connect to API Gateway. Check your internet connection.');
+      } else if (e.toString().contains('TimeoutException')) {
+        throw Exception('Connection timeout: API Gateway request timed out.');
+      } else {
+        throw Exception('Error fetching account summary: $e');
+      }
     }
   } else {
     debugPrint("Not a Cognito session, cannot fetch token.");

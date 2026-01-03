@@ -6,7 +6,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
 
-class VerificationCodeScreen extends ConsumerWidget {
+class VerificationCodeScreen extends ConsumerStatefulWidget {
   final String email;
   final bool fromSignUp;
 
@@ -14,10 +14,23 @@ class VerificationCodeScreen extends ConsumerWidget {
       {required this.email, this.fromSignUp = false, super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    String confirmationCode = '';
-    final formKey = GlobalKey<FormState>();
+  ConsumerState<VerificationCodeScreen> createState() =>
+      _VerificationCodeScreenState();
+}
 
+class _VerificationCodeScreenState
+    extends ConsumerState<VerificationCodeScreen> {
+  final TextEditingController codeController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    codeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const LogoWidget(),
@@ -48,29 +61,29 @@ class VerificationCodeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'A confirmation code has been sent to $email. Please enter it below to verify your account.',
+                      'A confirmation code has been sent to ${widget.email}. Please enter it below to verify your account.',
                       style: const TextStyle(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      controller: codeController,
                       decoration:
                           getPlatformInputDecoration('Verification Code'),
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center, // Center the input
                       validator: Validators.code,
-                      onSaved: (value) => confirmationCode = value ?? '',
+                      autofocus: true, // Auto-focus on this field
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
                         if (formKey.currentState?.validate() ?? false) {
-                          formKey.currentState?.save();
                           try {
                             await confirmSignUp(
                               ref,
-                              email,
-                              confirmationCode.trim(),
+                              widget.email,
+                              codeController.text.trim(),
                             );
 
                             final isSignUpComplete =
@@ -126,7 +139,7 @@ class VerificationCodeScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (!fromSignUp)
+                        if (!widget.fromSignUp)
                           Expanded(
                             child: TextButton(
                               onPressed: () {
@@ -144,14 +157,15 @@ class VerificationCodeScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        if (!fromSignUp) const SizedBox(width: 12),
+                        if (!widget.fromSignUp) const SizedBox(width: 12),
                         Expanded(
                           child: Align(
                             alignment: Alignment.centerRight,
                             child: GestureDetector(
                               onTap: () async {
                                 try {
-                                  await resendVerificationCode(ref, email);
+                                  await resendVerificationCode(
+                                      ref, widget.email);
                                   showGentleSnackBar(
                                       context, 'Verification code sent!',
                                       type: SnackBarType.success);

@@ -21,6 +21,7 @@ import '../features/shared/widgets/app_scaffold.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true, // Enable debug logs for routing
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',

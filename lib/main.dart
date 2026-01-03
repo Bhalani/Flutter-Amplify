@@ -9,7 +9,6 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'amplifyconfiguration.dart';
 import 'router/app_router.dart';
 import 'core/constants/ui_constants.dart';
-import 'core/widgets/deep_link_initializer.dart';
 import 'features/landing/presentation/landing_screen.dart';
 
 void main() async {
@@ -287,9 +286,6 @@ class AmplifyAuthApp extends StatelessWidget {
         ),
       ),
       routerConfig: appRouter,
-      builder: (context, child) => DeepLinkInitializer(
-        child: BiometricGate(child: child!),
-      ),
     );
   }
 }
