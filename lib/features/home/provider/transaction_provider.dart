@@ -17,8 +17,7 @@ final transactionProvider = FutureProvider<List<Transaction>>((ref) async {
 
     try {
       final response = await http.get(
-        Uri.parse(
-            'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transactions'),
+        Uri.parse('http://192.168.1.10:8080/transactions'),
         headers: {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',

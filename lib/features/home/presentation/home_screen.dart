@@ -12,7 +12,14 @@ import 'account_summary_card.dart';
 import 'transaction_list.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning!';
+    if (hour < 17) return 'Good afternoon!';
+    return 'Good evening!';
+  }
 
   void _handleDeepLinkCallback(BuildContext context, WidgetRef ref,
       String event, Map<String, dynamic>? data) {
@@ -143,7 +150,9 @@ class HomeScreen extends ConsumerWidget {
             child: Container(
               color: UIConstants.backgroundColor,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 4, 14, 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: UIConstants.spaceMd, // 16dp standardized
+                ),
                 child: RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(accountSummaryProvider);
@@ -158,19 +167,38 @@ class HomeScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Personalized Greeting
                         Padding(
-                          padding:
-                              const EdgeInsets.only(top: 24.0, bottom: 8.0),
-                          child: Text(
-                            'Account details:',
-                            style: TextStyle(
-                              fontSize: UIConstants.headerTextSize,
-                              fontWeight: FontWeight.bold,
-                              color: UIConstants.slateGreyColor,
-                            ),
+                          padding: const EdgeInsets.only(
+                            top: UIConstants.spaceLg,
+                            bottom: UIConstants.spaceSm,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _getGreeting(),
+                                style: TextStyle(
+                                  fontSize: UIConstants.headerTextSize,
+                                  fontWeight: FontWeight.w700,
+                                  color: UIConstants.blackColor,
+                                ),
+                              ),
+                              const SizedBox(height: UIConstants.spaceXs),
+                              Text(
+                                'Your financial overview',
+                                style: TextStyle(
+                                  fontSize: UIConstants.normalTextSize,
+                                  color: UIConstants.mutedColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 18),
+
+                        const SizedBox(height: UIConstants.spaceMd), // 16dp
+
+                        // Account Summary (Hero Balance)
                         AccountSummaryCard(
                           balance: summary.currentBalance,
                           currencyCode: summary.currencyCode,
@@ -178,8 +206,13 @@ class HomeScreen extends ConsumerWidget {
                           expense: summary.expense,
                           formattedMonth: formattedMonth,
                         ),
-                        const SizedBox(height: 28),
+
+                        const SizedBox(height: UIConstants.spaceLg), // 24dp
+
+                        // Transactions Section
                         const TransactionList(),
+
+                        // Refresh indicator feedback
                         ValueListenableBuilder<bool>(
                           valueListenable: refreshed,
                           builder: (context, value, child) {
@@ -190,13 +223,16 @@ class HomeScreen extends ConsumerWidget {
                                       duration:
                                           const Duration(milliseconds: 400),
                                       child: Icon(Icons.check_circle,
-                                          color: UIConstants.primaryColor,
+                                          color: UIConstants.successColor,
                                           size: 32),
                                     ),
                                   )
                                 : const SizedBox.shrink();
                           },
                         ),
+
+                        const SizedBox(
+                            height: UIConstants.spaceLg), // Bottom padding
                       ],
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_auth/main.dart';
+import '../../../core/constants/ui_constants.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
@@ -22,6 +23,7 @@ class _VerificationCodeScreenState
     extends ConsumerState<VerificationCodeScreen> {
   final TextEditingController codeController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -32,175 +34,169 @@ class _VerificationCodeScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: UIConstants.backgroundColor,
       appBar: AppBar(
         title: const LogoWidget(),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Align(
-        alignment: const Alignment(0, -0.4),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 16),
-              const Text(
-                'Verification Code',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: UIConstants.spaceMd, // 16dp
+              vertical: UIConstants.spaceLg, // 24dp
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header Icon
+                Container(
+                  padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+                  decoration: BoxDecoration(
+                    color: UIConstants.primarySurfaceColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.mark_email_read_rounded,
+                    size: 48,
+                    color: UIConstants.primaryColor,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'A confirmation code has been sent to ${widget.email}. Please enter it below to verify your account.',
-                      style: const TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: codeController,
-                      decoration:
-                          getPlatformInputDecoration('Verification Code'),
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center, // Center the input
-                      validator: Validators.code,
-                      autofocus: true, // Auto-focus on this field
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (formKey.currentState?.validate() ?? false) {
-                          try {
-                            await confirmSignUp(
-                              ref,
-                              widget.email,
-                              codeController.text.trim(),
-                            );
+                const SizedBox(height: UIConstants.spaceMd), // 16dp
+                Text(
+                  'Verify Your Email',
+                  style: UIConstants.headingStyle,
+                ),
+                const SizedBox(height: UIConstants.spaceSm), // 8dp
+                Text(
+                  'A code has been sent to',
+                  style: UIConstants.captionStyle,
+                ),
+                Text(
+                  widget.email,
+                  style: TextStyle(
+                    fontSize: UIConstants.normalTextSize,
+                    fontWeight: FontWeight.w600,
+                    color: UIConstants.primaryColor,
+                  ),
+                ),
 
-                            final isSignUpComplete =
-                                ref.read(authStateProvider).isSignUpComplete;
-                            final message = ref.read(authStateProvider).message;
+                const SizedBox(height: UIConstants.spaceLg), // 24dp
 
-                            if (isSignUpComplete) {
-                              // Only send user details to backend if coming from sign up
-                              // if (fromSignUp) {
-                              //   try {
-                              //     final details =
-                              //         ref.read(signUpUserDetailsProvider);
-                              //     final firstName = details?.firstName ?? '';
-                              //     final lastName = details?.lastName ?? '';
-                              //     final emailVal = details?.email ?? email;
-                              //     debugPrint(
-                              //         "Sending detils to backend is being called");
-                              //     // Commenting out the call to sendUserDetailsToBackendProvider
-                              //     /*
-                              //     await sendUserDetailsToBackendProvider(
-                              //       ref,
-                              //       firstName: firstName,
-                              //       lastName: lastName,
-                              //       email: emailVal,
-                              //     );
-                              //     */
-                              //     // Clear the provider after use
-                              //     ref
-                              //         .read(signUpUserDetailsProvider.notifier)
-                              //         .state = null;
-                              //   } catch (e) {
-                              //     debugPrint(
-                              //         'Failed to send user details to backend: $e');
-                              //   }
-                              // }
-                              showGentleSnackBar(
-                                  context, 'Email verified successfully!',
-                                  type: SnackBarType.success);
-                              context.go('/home');
-                            } else {
-                              showGentleSnackBar(context, 'Error: $message',
-                                  type: SnackBarType.error);
-                            }
-                          } catch (e) {
-                            showGentleSnackBar(context, 'Error: $e',
-                                type: SnackBarType.error);
-                          }
-                        }
-                      },
-                      child: const Text('Verify'),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Form Card
+                Container(
+                  padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+                  decoration: UIConstants.cardDecoration,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (!widget.fromSignUp)
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                context.go('/verify_email');
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                textStyle: const TextStyle(
-                                    decoration: TextDecoration.underline),
-                              ),
-                              child: const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text('Edit Email'),
-                              ),
-                            ),
+                        TextFormField(
+                          controller: codeController,
+                          decoration: const InputDecoration(
+                            labelText: 'Verification Code',
+                            prefixIcon: Icon(Icons.pin_outlined),
+                            hintText: 'Enter 6-digit code',
                           ),
-                        if (!widget.fromSignUp) const SizedBox(width: 12),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: GestureDetector(
-                              onTap: () async {
-                                try {
-                                  await resendVerificationCode(
-                                      ref, widget.email);
-                                  showGentleSnackBar(
-                                      context, 'Verification code sent!',
-                                      type: SnackBarType.success);
-                                } catch (e) {
-                                  showGentleSnackBar(context, 'Error: $e',
-                                      type: SnackBarType.error);
-                                }
-                              },
-                              child: const Text(
-                                'Resend Code',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            letterSpacing: 8,
+                            fontWeight: FontWeight.w600,
                           ),
+                          validator: Validators.code,
+                          autofocus: true,
+                        ),
+                        const SizedBox(height: UIConstants.spaceLg), // 24dp
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _handleVerify,
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Verify'),
+                          ),
+                        ),
+                        const SizedBox(height: UIConstants.spaceMd), // 16dp
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (!widget.fromSignUp)
+                              TextButton(
+                                onPressed: () => context.go('/verify_email'),
+                                child: const Text('Edit Email'),
+                              ),
+                            TextButton(
+                              onPressed: _handleResend,
+                              child: const Text('Resend Code'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        context.go('/sign_up');
-                      },
-                      child: const Text('Sign Up'),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: UIConstants.spaceXl), // 32dp
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => context.go('/sign_up'),
+                    child: const Text('Back to Sign Up'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleVerify() async {
+    if (formKey.currentState?.validate() ?? false) {
+      setState(() => isLoading = true);
+      try {
+        await confirmSignUp(ref, widget.email, codeController.text.trim());
+        final isSignUpComplete = ref.read(authStateProvider).isSignUpComplete;
+        final message = ref.read(authStateProvider).message;
+
+        if (isSignUpComplete) {
+          showGentleSnackBar(context, 'Email verified successfully!',
+              type: SnackBarType.success);
+          context.go('/home');
+        } else {
+          showGentleSnackBar(context, 'Error: $message',
+              type: SnackBarType.error);
+        }
+      } catch (e) {
+        showGentleSnackBar(context, 'Error: $e', type: SnackBarType.error);
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleResend() async {
+    try {
+      await resendVerificationCode(ref, widget.email);
+      showGentleSnackBar(context, 'Verification code sent!',
+          type: SnackBarType.success);
+    } catch (e) {
+      showGentleSnackBar(context, 'Error: $e', type: SnackBarType.error);
+    }
   }
 }

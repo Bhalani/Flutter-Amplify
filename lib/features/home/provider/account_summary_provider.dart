@@ -13,8 +13,7 @@ final accountSummaryProvider = FutureProvider<AccountSummary>((ref) async {
   final session = await Amplify.Auth.fetchAuthSession();
   if (session is CognitoAuthSession) {
     final idToken = session.userPoolTokensResult.value.idToken.raw;
-    const apiUrl =
-        'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transactions/summary';
+    const apiUrl = 'http://192.168.1.10:8080/transactions/summary';
 
     debugPrint("🏦 Fetching Account Summary from API Gateway");
     debugPrint("🔑 Token: ${idToken.isNotEmpty ? 'Present' : 'Missing'}");

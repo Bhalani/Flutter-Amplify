@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amplify_auth/main.dart';
+import '../../../core/constants/ui_constants.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../shared/widgets/logo_widget.dart';
@@ -24,6 +25,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       TextEditingController();
   bool codeSent = false;
   bool isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -34,6 +37,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  Color _getStrengthColor(double strength) {
+    if (strength < 0.4) return UIConstants.dangerColor;
+    if (strength < 0.8) return UIConstants.warningColor;
+    return UIConstants.successColor;
+  }
+
+  String _getStrengthLabel(double strength) {
+    if (strength < 0.4) return 'Weak';
+    if (strength < 0.8) return 'Medium';
+    return 'Strong';
+  }
+
   Future<void> _sendCode() async {
     setState(() => isLoading = true);
     try {
@@ -42,9 +57,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           .resetPassword(_emailController.text.trim());
       final nextStep = result.nextStep.updateStep;
       if (nextStep == AuthResetPasswordStep.confirmResetPasswordWithCode) {
-        setState(() {
-          codeSent = true;
-        });
+        setState(() => codeSent = true);
         showGentleSnackBar(context, 'Verification code sent to your email.',
             type: SnackBarType.info);
       } else if (result.isPasswordReset) {
@@ -70,7 +83,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             _passwordController.text.trim(),
             _codeController.text.trim(),
           );
-      debugPrint('Result: ${result.isPasswordReset}');
       if (result.isPasswordReset) {
         showGentleSnackBar(
             context, 'Password reset successful! Please sign in.',
@@ -89,10 +101,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strength = Validators.passwordStrength(_passwordController.text);
+    final strengthColor = _getStrengthColor(strength);
+    final strengthLabel = _getStrengthLabel(strength);
+
     return Scaffold(
+      backgroundColor: UIConstants.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               context.pop();
@@ -100,127 +117,198 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               context.go('/sign_in');
             }
           },
-          tooltip: 'Back',
         ),
         title: const LogoWidget(),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: UIConstants.spaceMd, // 16dp
+              vertical: UIConstants.spaceLg, // 24dp
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Forgot Password',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+                  decoration: BoxDecoration(
+                    color: UIConstants.primarySurfaceColor,
+                    shape: BoxShape.circle,
                   ),
+                  child: Icon(
+                    codeSent
+                        ? Icons.lock_reset_rounded
+                        : Icons.lock_outline_rounded,
+                    size: 48,
+                    color: UIConstants.primaryColor,
+                  ),
+                ),
+                const SizedBox(height: UIConstants.spaceMd), // 16dp
+                Text(
+                  codeSent ? 'Reset Password' : 'Forgot Password',
+                  style: UIConstants.headingStyle,
+                ),
+                const SizedBox(height: UIConstants.spaceSm), // 8dp
+                Text(
+                  codeSent
+                      ? 'Enter the code sent to your email'
+                      : 'Enter your email to receive a reset code',
+                  style: UIConstants.captionStyle,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 44),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: getPlatformInputDecoration('Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: Validators.email,
-                  enabled: !codeSent,
-                ),
-                if (codeSent) ...[
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _codeController,
-                    decoration: getPlatformInputDecoration('Verification Code'),
-                    keyboardType: TextInputType.number,
-                    validator: Validators.code,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: getPlatformInputDecoration('New Password'),
-                    obscureText: true,
-                    validator: Validators.password,
-                    onChanged: (value) {
-                      setState(() {});
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  Builder(
-                    builder: (context) {
-                      final strength =
-                          Validators.passwordStrength(_passwordController.text);
-                      Color strengthColor;
-                      String strengthLabel;
-                      if (strength < 0.4) {
-                        strengthColor = Colors.red;
-                        strengthLabel = 'Weak';
-                      } else if (strength < 0.8) {
-                        strengthColor = Colors.orange;
-                        strengthLabel = 'Medium';
-                      } else {
-                        strengthColor = Colors.green;
-                        strengthLabel = 'Strong';
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          LinearProgressIndicator(
-                            value: strength,
-                            backgroundColor: Colors.grey[300],
-                            color: strengthColor,
-                            minHeight: 5,
+
+                const SizedBox(height: UIConstants.spaceLg), // 24dp
+
+                // Form Card
+                Container(
+                  padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+                  decoration: UIConstants.cardDecoration,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
                           ),
-                          Text('Password strength: $strengthLabel',
-                              style: TextStyle(
-                                  color: strengthColor, fontSize: 12)),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: Validators.email,
+                          enabled: !codeSent,
+                        ),
+                        if (codeSent) ...[
+                          const SizedBox(height: UIConstants.spaceMd), // 16dp
+                          TextFormField(
+                            controller: _codeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Verification Code',
+                              prefixIcon: Icon(Icons.pin_outlined),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: Validators.code,
+                          ),
+                          const SizedBox(height: UIConstants.spaceMd), // 16dp
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: 'New Password',
+                              prefixIcon:
+                                  const Icon(Icons.lock_outline_rounded),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () {
+                                  setState(() =>
+                                      _obscurePassword = !_obscurePassword);
+                                },
+                              ),
+                            ),
+                            obscureText: _obscurePassword,
+                            validator: Validators.password,
+                            onChanged: (value) => setState(() {}),
+                          ),
+                          const SizedBox(height: UIConstants.spaceSm), // 8dp
+                          ClipRRect(
+                            borderRadius: UIConstants.borderRadiusXs,
+                            child: LinearProgressIndicator(
+                              value: strength,
+                              backgroundColor: UIConstants.dividerColor,
+                              color: strengthColor,
+                              minHeight: 4,
+                            ),
+                          ),
+                          const SizedBox(height: UIConstants.spaceXs), // 4dp
+                          Text(
+                            'Password strength: $strengthLabel',
+                            style: TextStyle(
+                              color: strengthColor,
+                              fontSize: UIConstants.tinyTextSize,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: UIConstants.spaceMd), // 16dp
+                          TextFormField(
+                            controller: _confirmPasswordController,
+                            decoration: InputDecoration(
+                              labelText: 'Confirm Password',
+                              prefixIcon:
+                                  const Icon(Icons.lock_outline_rounded),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () {
+                                  setState(() => _obscureConfirmPassword =
+                                      !_obscureConfirmPassword);
+                                },
+                              ),
+                            ),
+                            obscureText: _obscureConfirmPassword,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your password';
+                              }
+                              if (value != _passwordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
                         ],
-                      );
-                    },
+                        const SizedBox(height: UIConstants.spaceLg), // 24dp
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      if (codeSent &&
+                                          _passwordController.text !=
+                                              _confirmPasswordController.text) {
+                                        showGentleSnackBar(
+                                            context, 'Passwords do not match',
+                                            type: SnackBarType.error);
+                                        return;
+                                      }
+                                      if (!codeSent) {
+                                        await _sendCode();
+                                      } else {
+                                        await _confirmReset();
+                                      }
+                                    }
+                                  },
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    codeSent ? 'Reset Password' : 'Send Code'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _confirmPasswordController,
-                    decoration: getPlatformInputDecoration('Confirm Password'),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-                const SizedBox(height: 24),
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState?.validate() ?? false) {
-                            if (codeSent &&
-                                _passwordController.text !=
-                                    _confirmPasswordController.text) {
-                              showGentleSnackBar(
-                                  context, 'Passwords do not match',
-                                  type: SnackBarType.error);
-                              return;
-                            }
-                            if (!codeSent) {
-                              await _sendCode();
-                            } else {
-                              await _confirmReset();
-                            }
-                          }
-                        },
-                        child: Text(codeSent ? 'Reset Password' : 'Send Code'),
-                      ),
+                ),
               ],
             ),
           ),

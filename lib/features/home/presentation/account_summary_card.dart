@@ -19,171 +19,177 @@ class AccountSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencySymbol = UIConstants.getCurrencySymbol(currencyCode);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Hero Balance Card with integrated month
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          padding: const EdgeInsets.all(UIConstants.spaceLg), // 24dp
           decoration: BoxDecoration(
-            color: UIConstants.primaryColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
+            gradient: UIConstants.primaryGradient,
+            borderRadius: UIConstants.borderRadiusLg,
+            boxShadow: UIConstants.primaryShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.account_balance_wallet,
-                      color: UIConstants.secondaryColor, size: 24),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Current balance',
-                    style: TextStyle(
-                      fontSize: UIConstants.mediumTextSize,
-                      fontWeight: FontWeight.w600,
-                      color: UIConstants.secondaryColor,
+              // Month badge (integrated into card)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: UIConstants.spaceSm,
+                  vertical: UIConstants.spaceXs,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: UIConstants.borderRadiusSm,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      color: Colors.white.withOpacity(0.9),
+                      size: 12,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: UIConstants.spaceXs),
+                    Text(
+                      formattedMonth,
+                      style: TextStyle(
+                        fontSize: UIConstants.smallTextSize,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
+
+              const SizedBox(height: UIConstants.spaceMd), // 16dp
+
+              // Label
               Text(
-                UIConstants.getCurrencySymbol(currencyCode) +
-                    ' ' +
-                    balance.toStringAsFixed(2),
+                'Current Balance',
                 style: TextStyle(
-                  fontSize: UIConstants.headerTextSize,
-                  fontWeight: FontWeight.bold,
-                  color: UIConstants.secondaryColor,
+                  fontSize: UIConstants.normalTextSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withOpacity(0.8),
+                  letterSpacing: 0.3,
+                ),
+              ),
+
+              const SizedBox(height: UIConstants.spaceXs), // 4dp
+
+              // Hero Balance Amount
+              Text(
+                '$currencySymbol ${balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 36, // Larger for hero effect
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 18),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(Icons.calendar_today,
-                color: UIConstants.slateGreyColor, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              formattedMonth,
-              style: TextStyle(
-                fontSize: UIConstants.normalTextSize,
-                color: UIConstants.slateGreyColor,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
+
+        const SizedBox(height: UIConstants.spaceMd), // 16dp
+
+        // Income & Expense Cards Row
         Row(
           children: [
+            // Income Card
             Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: UIConstants.whiteColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: UIConstants.borderLightGrey),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text('Income',
-                            style: TextStyle(
-                              fontSize: UIConstants.normalTextSize,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                            )),
-                        const SizedBox(width: 8),
-                        Icon(Icons.trending_up,
-                            color: UIConstants.primaryColor, size: 22),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      UIConstants.getCurrencySymbol(currencyCode) +
-                          ' ' +
-                          income.toStringAsFixed(2),
-                      style: TextStyle(
-                        fontSize: UIConstants.subHeaderTextSize,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              child: _buildStatCard(
+                icon: Icons.trending_up_rounded,
+                label: 'Income',
+                amount: income,
+                currencySymbol: currencySymbol,
+                color: UIConstants.successColor,
+                isPositive: true,
               ),
             ),
-            const SizedBox(width: 16),
+
+            const SizedBox(width: UIConstants.spaceMd), // 16dp
+
+            // Expense Card
             Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: UIConstants.whiteColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: UIConstants.borderLightGrey),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text('Expense',
-                            style: TextStyle(
-                              fontSize: UIConstants.normalTextSize,
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            )),
-                        const SizedBox(width: 8),
-                        Icon(Icons.trending_down, color: Colors.red, size: 22),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      UIConstants.getCurrencySymbol(currencyCode) +
-                          ' ' +
-                          expense.toStringAsFixed(2),
-                      style: TextStyle(
-                        fontSize: UIConstants.subHeaderTextSize,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              child: _buildStatCard(
+                icon: Icons.trending_down_rounded,
+                label: 'Expense',
+                amount: expense,
+                currencySymbol: currencySymbol,
+                color: UIConstants.dangerColor,
+                isPositive: false,
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required double amount,
+    required String currencySymbol,
+    required Color color,
+    required bool isPositive,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+      decoration: BoxDecoration(
+        color: UIConstants.surfaceColor,
+        borderRadius: UIConstants.borderRadiusLg,
+        border: Border.all(
+          color: color.withOpacity(0.15),
+          width: 1,
+        ),
+        boxShadow: UIConstants.shadowSm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row with icon and label
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: UIConstants.borderRadiusSm,
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: UIConstants.spaceSm),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: UIConstants.normalTextSize,
+                  fontWeight: FontWeight.w600,
+                  color: UIConstants.slateGreyColor,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: UIConstants.spaceSm), // 8dp
+
+          // Amount with sign indicator
+          Text(
+            '${isPositive ? '+' : '-'}$currencySymbol ${amount.abs().toStringAsFixed(2)}',
+            style: TextStyle(
+              fontSize: UIConstants.subHeaderTextSize,
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

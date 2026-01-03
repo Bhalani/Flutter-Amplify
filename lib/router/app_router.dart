@@ -1,4 +1,5 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
@@ -19,13 +20,42 @@ import '../features/settings/presentation/settings_screen.dart';
 import '../features/settings/presentation/update_password_screen.dart';
 import '../features/shared/widgets/app_scaffold.dart';
 
+/// Instant transition with no animation to prevent ghosting effect
+CustomTransitionPage<void> buildNoAnimationTransition({
+  required Widget child,
+  required GoRouterState state,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: Duration.zero,
+    reverseTransitionDuration: Duration.zero,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return child;
+    },
+  );
+}
+
+/// Helper to check auth session
+Future<bool> _isSignedIn() async {
+  try {
+    final session = await Amplify.Auth.fetchAuthSession();
+    return session.isSignedIn;
+  } catch (e) {
+    return false;
+  }
+}
+
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true, // Enable debug logs for routing
   initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const LandingScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const LandingScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
         final prefs = await SharedPreferences.getInstance();
         final userEmail = prefs.getString('user_email');
@@ -37,58 +67,58 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/sign_in',
-      builder: (context, state) => const SignInScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const SignInScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return '/home';
-          }
-        } catch (e) {}
+        if (await _isSignedIn()) {
+          return '/home';
+        }
         return null;
       },
     ),
     GoRoute(
       path: '/sign_up',
-      builder: (context, state) => const SignUpScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const SignUpScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return '/home';
-          }
-        } catch (e) {}
+        if (await _isSignedIn()) {
+          return '/home';
+        }
         return null;
       },
     ),
     GoRoute(
       path: '/code_verification',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         final email = extra?['email'] as String? ?? '';
         final fromSignUp = extra?['fromSignUp'] as bool? ?? false;
-        return VerificationCodeScreen(email: email, fromSignUp: fromSignUp);
+        return buildNoAnimationTransition(
+          child: VerificationCodeScreen(email: email, fromSignUp: fromSignUp),
+          state: state,
+        );
       },
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return '/home';
-          }
-        } catch (e) {}
+        if (await _isSignedIn()) {
+          return '/home';
+        }
         return null;
       },
     ),
     GoRoute(
       path: '/verify_email',
-      builder: (context, state) => const VerifyEmailScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const VerifyEmailScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return '/home';
-          }
-        } catch (e) {}
+        if (await _isSignedIn()) {
+          return '/home';
+        }
         return null;
       },
     ),
@@ -132,14 +162,12 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/home',
-          builder: (context, state) => const HomeScreen(),
+          pageBuilder: (context, state) => buildNoAnimationTransition(
+            child: const HomeScreen(),
+            state: state,
+          ),
           redirect: (context, state) async {
-            try {
-              final session = await Amplify.Auth.fetchAuthSession();
-              if (!session.isSignedIn) {
-                return '/sign_in';
-              }
-            } catch (e) {
+            if (!await _isSignedIn()) {
               return '/sign_in';
             }
             return null;
@@ -147,14 +175,12 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/immobilienmiete',
-          builder: (context, state) => const ImmobilienmieteScreen(),
+          pageBuilder: (context, state) => buildNoAnimationTransition(
+            child: const ImmobilienmieteScreen(),
+            state: state,
+          ),
           redirect: (context, state) async {
-            try {
-              final session = await Amplify.Auth.fetchAuthSession();
-              if (!session.isSignedIn) {
-                return '/sign_in';
-              }
-            } catch (e) {
+            if (!await _isSignedIn()) {
               return '/sign_in';
             }
             return null;
@@ -162,14 +188,12 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/money_manager',
-          builder: (context, state) => const MoneyManagerScreen(),
+          pageBuilder: (context, state) => buildNoAnimationTransition(
+            child: const MoneyManagerScreen(),
+            state: state,
+          ),
           redirect: (context, state) async {
-            try {
-              final session = await Amplify.Auth.fetchAuthSession();
-              if (!session.isSignedIn) {
-                return '/sign_in';
-              }
-            } catch (e) {
+            if (!await _isSignedIn()) {
               return '/sign_in';
             }
             return null;
@@ -177,14 +201,12 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/insurance',
-          builder: (context, state) => const InsuranceScreen(),
+          pageBuilder: (context, state) => buildNoAnimationTransition(
+            child: const InsuranceScreen(),
+            state: state,
+          ),
           redirect: (context, state) async {
-            try {
-              final session = await Amplify.Auth.fetchAuthSession();
-              if (!session.isSignedIn) {
-                return '/sign_in';
-              }
-            } catch (e) {
+            if (!await _isSignedIn()) {
               return '/sign_in';
             }
             return null;
@@ -192,14 +214,12 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/account',
-          builder: (context, state) => const AccountScreen(),
+          pageBuilder: (context, state) => buildNoAnimationTransition(
+            child: const AccountScreen(),
+            state: state,
+          ),
           redirect: (context, state) async {
-            try {
-              final session = await Amplify.Auth.fetchAuthSession();
-              if (!session.isSignedIn) {
-                return '/sign_in';
-              }
-            } catch (e) {
+            if (!await _isSignedIn()) {
               return '/sign_in';
             }
             return null;
@@ -209,53 +229,62 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/design_components',
-      builder: (context, state) => const UIComponentsScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const UIComponentsScreen(),
+        state: state,
+      ),
     ),
     GoRoute(
       path: '/new_ui_components',
-      builder: (context, state) => const NewUIComponentsScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const NewUIComponentsScreen(),
+        state: state,
+      ),
     ),
     GoRoute(
       path: '/about_us',
-      builder: (context, state) => const AboutUsScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const AboutUsScreen(),
+        state: state,
+      ),
     ),
     GoRoute(
       path: '/forgot_password',
-      builder: (context, state) => const ForgotPasswordScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const ForgotPasswordScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return '/home';
-          }
-        } catch (e) {}
+        if (await _isSignedIn()) {
+          return '/home';
+        }
         return null;
       },
     ),
     GoRoute(
       path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const SettingsScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
+        if (!await _isSignedIn()) {
+          return '/sign_in';
+        }
+        return null;
       },
     ),
     GoRoute(
       path: '/update_password',
-      builder: (context, state) => const UpdatePasswordScreen(),
+      pageBuilder: (context, state) => buildNoAnimationTransition(
+        child: const UpdatePasswordScreen(),
+        state: state,
+      ),
       redirect: (context, state) async {
-        try {
-          final session = await Amplify.Auth.fetchAuthSession();
-          if (session.isSignedIn) {
-            return null;
-          }
-        } catch (e) {}
-        return '/sign_in';
+        if (!await _isSignedIn()) {
+          return '/sign_in';
+        }
+        return null;
       },
     ),
   ],

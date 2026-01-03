@@ -9,8 +9,7 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService());
 
 class SyncService {
-  static const _apiUrl =
-      'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/transaction-link';
+  static const _apiUrl = 'http://192.168.1.10:8080/transaction-link';
 
   Future<String?> syncAndGetRedirectUrl() async {
     final token = await _getCognitoToken();

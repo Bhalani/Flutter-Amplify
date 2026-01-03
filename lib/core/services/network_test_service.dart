@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 
 class NetworkTestService {
   static Future<bool> testAPIGatewayConnectivity() async {
-    const testUrl =
-        'https://rh1k6y8abj.execute-api.ap-south-1.amazonaws.com/dev/health';
+    const testUrl = 'http://192.168.1.10:8080/health';
 
     debugPrint('🧪 Testing API Gateway connectivity...');
     debugPrint('🌐 Test URL: $testUrl');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/ui_constants.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../../main.dart';
@@ -19,6 +20,9 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -26,6 +30,18 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Color _getStrengthColor(double strength) {
+    if (strength < 0.4) return UIConstants.dangerColor;
+    if (strength < 0.8) return UIConstants.warningColor;
+    return UIConstants.successColor;
+  }
+
+  String _getStrengthLabel(double strength) {
+    if (strength < 0.4) return 'Weak';
+    if (strength < 0.8) return 'Medium';
+    return 'Strong';
   }
 
   Future<void> _updatePassword() async {
@@ -62,7 +78,12 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strength = Validators.passwordStrength(_newPasswordController.text);
+    final strengthColor = _getStrengthColor(strength);
+    final strengthLabel = _getStrengthLabel(strength);
+
     return Scaffold(
+      backgroundColor: UIConstants.backgroundColor,
       appBar: AppBar(
         title: const Text('Update Password'),
         leading: IconButton(
@@ -70,98 +91,149 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
           onPressed: () => GoRouter.of(context).go('/settings'),
           tooltip: 'Back to Settings',
         ),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: Align(
-        alignment: const Alignment(0, -0.4),
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _currentPasswordController,
-                  decoration: getPlatformInputDecoration('Current Password'),
-                  obscureText: true,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Enter your current password'
-                      : null,
-                  enabled: !_isLoading,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _newPasswordController,
-                  decoration: getPlatformInputDecoration('New Password'),
-                  obscureText: true,
-                  validator: Validators.password,
-                  enabled: !_isLoading,
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                ),
-                const SizedBox(height: 4),
-                Builder(
-                  builder: (context) {
-                    final strength = Validators.passwordStrength(
-                        _newPasswordController.text);
-                    Color strengthColor;
-                    String strengthLabel;
-                    if (strength < 0.4) {
-                      strengthColor = Colors.red;
-                      strengthLabel = 'Weak';
-                    } else if (strength < 0.8) {
-                      strengthColor = Colors.orange;
-                      strengthLabel = 'Medium';
-                    } else {
-                      strengthColor = Colors.green;
-                      strengthLabel = 'Strong';
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LinearProgressIndicator(
-                          value: strength,
-                          backgroundColor: Colors.grey[300],
-                          color: strengthColor,
-                          minHeight: 5,
+          padding: const EdgeInsets.symmetric(
+            horizontal: UIConstants.spaceMd, // 16dp
+            vertical: UIConstants.spaceLg, // 24dp
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Instructional text only - AppBar already says "Update Password"
+              Text(
+                'Enter your current password and choose a new one',
+                style: UIConstants.bodyStyle,
+              ),
+
+              const SizedBox(height: UIConstants.spaceLg), // 24dp
+
+              // Form Card
+              Container(
+                padding: const EdgeInsets.all(UIConstants.spaceMd), // 16dp
+                decoration: UIConstants.cardDecoration,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextFormField(
+                        controller: _currentPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Current Password',
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureCurrentPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() => _obscureCurrentPassword =
+                                  !_obscureCurrentPassword);
+                            },
+                          ),
                         ),
-                        Text('Password strength: $strengthLabel',
-                            style:
-                                TextStyle(color: strengthColor, fontSize: 12)),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  decoration:
-                      getPlatformInputDecoration('Confirm New Password'),
-                  obscureText: true,
-                  validator: (value) => value != _newPasswordController.text
-                      ? 'Passwords do not match'
-                      : null,
-                  enabled: !_isLoading,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _updatePassword,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Text('Update Password'),
+                        obscureText: _obscureCurrentPassword,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Enter your current password'
+                            : null,
+                        enabled: !_isLoading,
+                      ),
+                      const SizedBox(height: UIConstants.spaceMd), // 16dp
+                      TextFormField(
+                        controller: _newPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureNewPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() =>
+                                  _obscureNewPassword = !_obscureNewPassword);
+                            },
+                          ),
+                        ),
+                        obscureText: _obscureNewPassword,
+                        validator: Validators.password,
+                        enabled: !_isLoading,
+                        onChanged: (value) {
+                          setState(() {});
+                        },
+                      ),
+                      const SizedBox(height: UIConstants.spaceSm), // 8dp
+                      // Password strength indicator
+                      ClipRRect(
+                        borderRadius: UIConstants.borderRadiusXs,
+                        child: LinearProgressIndicator(
+                          value: strength,
+                          backgroundColor: UIConstants.dividerColor,
+                          color: strengthColor,
+                          minHeight: 4,
+                        ),
+                      ),
+                      const SizedBox(height: UIConstants.spaceXs), // 4dp
+                      Text(
+                        'Password strength: $strengthLabel',
+                        style: TextStyle(
+                          color: strengthColor,
+                          fontSize: UIConstants.tinyTextSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: UIConstants.spaceMd), // 16dp
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm New Password',
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword);
+                            },
+                          ),
+                        ),
+                        obscureText: _obscureConfirmPassword,
+                        validator: (value) =>
+                            value != _newPasswordController.text
+                                ? 'Passwords do not match'
+                                : null,
+                        enabled: !_isLoading,
+                      ),
+                      const SizedBox(height: UIConstants.spaceLg), // 24dp
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _updatePassword,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text('Update Password'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

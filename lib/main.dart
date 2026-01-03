@@ -188,101 +188,164 @@ class AmplifyAuthApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Lato',
         primaryColor: UIConstants.primaryColor,
-        colorScheme: ColorScheme.fromSwatch().copyWith(
+        scaffoldBackgroundColor: UIConstants.backgroundColor,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: UIConstants.primaryColor,
           primary: UIConstants.primaryColor,
-          secondary: UIConstants.secondaryColor,
+          secondary: UIConstants.accentSecondary,
+          surface: UIConstants.surfaceColor,
+          error: UIConstants.dangerColor,
+          brightness: Brightness.light,
         ),
+        // M3 Card Theme
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: UIConstants.borderRadiusMd,
+          ),
+          color: UIConstants.surfaceColor,
+          surfaceTintColor: Colors.transparent,
+        ),
+        // Consistent 20dp radius - Text Button
         textButtonTheme: TextButtonThemeData(
-          style: ButtonStyle(
-            minimumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 80% width
-                return Size(MediaQuery.of(context).size.width * 0.85, 40);
-              } else {
-                // Tablet view: Fixed size
-                return const Size(200, 40);
-              }
-            }),
-            maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 90% width
-                return Size(MediaQuery.of(context).size.width * 0.9, 50);
-              } else {
-                // Tablet view: Fixed size
-                return const Size(350, 50);
-              }
-            }),
-            foregroundColor:
-                WidgetStateProperty.all(UIConstants.slateGreyColor),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+          style: TextButton.styleFrom(
+            foregroundColor: UIConstants.primaryColor,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            minimumSize: const Size(48, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: UIConstants.borderRadiusLg, // 20dp consistent
             ),
           ),
         ),
+        // Consistent 20dp radius - Elevated Button
         elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ButtonStyle(
-            minimumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 80% width
-                return Size(MediaQuery.of(context).size.width * 0.85, 40);
-              } else {
-                // Tablet view: Fixed size
-                return const Size(200, 40);
-              }
-            }),
-            maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                return Size(MediaQuery.of(context).size.width * 0.9, 50);
-              } else {
-                return const Size(350, 50);
-              }
-            }),
-            backgroundColor: WidgetStateProperty.all(UIConstants.primaryColor),
-            foregroundColor: WidgetStateProperty.all(UIConstants.whiteColor),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: UIConstants.primaryColor,
+            foregroundColor: UIConstants.whiteColor,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            minimumSize: const Size(48, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: UIConstants.borderRadiusLg, // 20dp consistent
+            ),
+            textStyle: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
             ),
           ),
         ),
+        // Consistent 20dp radius - Outlined Button
         outlinedButtonTheme: OutlinedButtonThemeData(
-          style: ButtonStyle(
-            minimumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 80% width
-                return Size(MediaQuery.of(context).size.width * 0.85, 40);
-              } else {
-                // Tablet view: Fixed size
-                return const Size(200, 40);
-              }
-            }),
-            maximumSize: WidgetStateProperty.resolveWith<Size>((states) {
-              if (MediaQuery.of(context).size.width < 600) {
-                // Mobile view: 90% width
-                return Size(MediaQuery.of(context).size.width * 0.9, 50);
-              } else {
-                // Tablet view: Fixed size
-                return const Size(350, 50);
-              }
-            }),
-            side: WidgetStateProperty.all(
-              BorderSide(color: UIConstants.primaryColor, width: 1),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: UIConstants.primaryColor,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            minimumSize: const Size(48, 48),
+            side: BorderSide(color: UIConstants.primaryColor, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: UIConstants.borderRadiusLg, // 20dp consistent
             ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+            textStyle: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
             ),
-            foregroundColor: WidgetStateProperty.all(UIConstants.primaryColor),
           ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          iconTheme: IconThemeData(color: Colors.black),
+        // Consistent 20dp radius - Filled Button
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: UIConstants.primaryColor,
+            foregroundColor: UIConstants.whiteColor,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            minimumSize: const Size(48, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: UIConstants.borderRadiusLg, // 20dp consistent
+            ),
+          ),
+        ),
+        // Consistent 20dp radius - Input Fields
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: UIConstants.surfaceColor,
+          border: OutlineInputBorder(
+            borderRadius: UIConstants.borderRadiusLg, // 20dp consistent
+            borderSide: BorderSide(color: UIConstants.borderLightGrey),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: UIConstants.borderRadiusLg,
+            borderSide: BorderSide(color: UIConstants.borderLightGrey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: UIConstants.borderRadiusLg,
+            borderSide: BorderSide(color: UIConstants.primaryColor, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: UIConstants.borderRadiusLg,
+            borderSide: BorderSide(color: UIConstants.dangerColor),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: UIConstants.borderRadiusLg,
+            borderSide: BorderSide(color: UIConstants.dangerColor, width: 2),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+        ),
+        // M3 AppBar
+        appBarTheme: AppBarTheme(
+          backgroundColor: UIConstants.backgroundColor,
+          foregroundColor: UIConstants.blackColor,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          centerTitle: false, // M3 default
+          titleTextStyle: TextStyle(
+            color: UIConstants.blackColor,
+            fontSize: 22,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Lato',
+          ),
+        ),
+        // M3 Divider
+        dividerTheme: DividerThemeData(
+          color: UIConstants.dividerColor,
+          thickness: 1,
+          space: 0,
+        ),
+        // M3 Bottom Navigation
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: UIConstants.surfaceColor,
+          selectedItemColor: UIConstants.primaryColor,
+          unselectedItemColor: UIConstants.mutedColor,
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          selectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        // M3 List Tile
+        listTileTheme: ListTileThemeData(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          minVerticalPadding: 12,
+          shape: RoundedRectangleBorder(
+            borderRadius: UIConstants.borderRadiusSm,
+          ),
+        ),
+        // M3 Snackbar
+        snackBarTheme: SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: UIConstants.borderRadiusSm,
+          ),
         ),
       ),
       routerConfig: appRouter,

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/constants/ui_constants.dart';
 import '../../shared/widgets/logo_widget.dart';
 
 class LandingScreen extends ConsumerWidget {
@@ -18,111 +19,138 @@ class LandingScreen extends ConsumerWidget {
         final prefs = snapshot.data;
         final userEmail = prefs?.getString('user_email');
         return Scaffold(
-          body: Column(
-            children: [
-              const LogoWidget(size: 200),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Image.asset(
-                    'assets/images/background.png',
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(builderContext).size.width < 600
-                        ? MediaQuery.of(builderContext).size.width * 0.9
-                        : 500,
-                    height: null, // Set height to auto
+          backgroundColor: UIConstants.backgroundColor,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: UIConstants.spaceLg),
+                const LogoWidget(size: 180),
+                const SizedBox(height: UIConstants.spaceMd),
+
+                // Main content area
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: UIConstants.spaceLg,
+                      ),
+                      child: Image.asset(
+                        'assets/images/background.png',
+                        fit: BoxFit.contain,
+                        width: MediaQuery.of(builderContext).size.width < 600
+                            ? MediaQuery.of(builderContext).size.width * 0.85
+                            : 450,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (biometricFailed)
-                      Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Text(
-                              'Biometric authentication failed',
-                              style: TextStyle(
-                                color: Colors.red.shade700,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.fingerprint, size: 24),
-                            label: const Text('Retry with biometrics'),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(200, 50),
-                              backgroundColor:
-                                  Theme.of(builderContext).colorScheme.primary,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: onBiometricRetry,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+
+                // Bottom action area
+                Container(
+                  padding: const EdgeInsets.all(UIConstants.spaceLg),
+                  decoration: BoxDecoration(
+                    color: UIConstants.surfaceColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(UIConstants.radiusXl),
+                      topRight: Radius.circular(UIConstants.radiusXl),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, -4),
                       ),
-                    if (snapshot.connectionState == ConnectionState.waiting)
-                      const SizedBox(
-                          height: 50,
-                          child: Center(child: CircularProgressIndicator())),
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        userEmail != null &&
-                        userEmail.isNotEmpty)
-                      Builder(
-                        builder: (btnContext) => ElevatedButton(
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (biometricFailed)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: UIConstants.spaceMd,
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: UIConstants.spaceMd,
+                                  vertical: UIConstants.spaceSm,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      UIConstants.dangerColor.withOpacity(0.1),
+                                  borderRadius: UIConstants.borderRadiusSm,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: UIConstants.dangerColor,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: UIConstants.spaceSm),
+                                    Text(
+                                      'Biometric authentication failed',
+                                      style: TextStyle(
+                                        color: UIConstants.dangerColor,
+                                        fontSize: UIConstants.smallTextSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: UIConstants.spaceMd),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.fingerprint, size: 22),
+                                label: const Text('Retry Biometrics'),
+                                onPressed: onBiometricRetry,
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (snapshot.connectionState == ConnectionState.waiting)
+                        const Padding(
+                          padding: EdgeInsets.all(UIConstants.spaceMd),
+                          child: CircularProgressIndicator(),
+                        ),
+                      if (snapshot.connectionState == ConnectionState.done &&
+                          userEmail != null &&
+                          userEmail.isNotEmpty)
+                        ElevatedButton(
                           onPressed: () {
-                            // Use Future.delayed to ensure context is ready
                             Future.delayed(Duration.zero, () {
                               GoRouter.of(context).go('/sign_in');
                             });
                           },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(200, 50),
-                          ),
                           child: const Text('Login'),
-                        ),
-                      )
-                    else if (snapshot.connectionState == ConnectionState.done)
-                      Builder(
-                        builder: (btnContext) => ElevatedButton(
+                        )
+                      else if (snapshot.connectionState == ConnectionState.done)
+                        ElevatedButton(
                           onPressed: () {
-                            // Use Future.delayed to ensure context is ready
                             Future.delayed(Duration.zero, () {
                               GoRouter.of(context).go('/sign_up');
                             });
                           },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(200, 50),
-                          ),
-                          child: const Text('Register'),
+                          child: const Text('Get Started'),
                         ),
-                      ),
-                    const SizedBox(height: 16),
-                    Builder(
-                      builder: (btnContext) => OutlinedButton(
+                      const SizedBox(height: UIConstants.spaceMd),
+                      OutlinedButton(
                         onPressed: () {
-                          // Use Future.delayed to ensure context is ready
                           Future.delayed(Duration.zero, () {
                             GoRouter.of(context).go('/about_us');
                           });
                         },
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(200, 50),
-                        ),
-                        child: const Text('About us'),
+                        child: const Text('About Us'),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: UIConstants.spaceSm),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

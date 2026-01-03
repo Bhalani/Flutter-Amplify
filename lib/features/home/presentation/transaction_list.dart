@@ -6,188 +6,233 @@ import '../provider/transaction_provider.dart';
 class TransactionList extends ConsumerWidget {
   const TransactionList({super.key});
 
+  Color _getTypeColor(String type, bool isIncome) {
+    if (isIncome) return UIConstants.accentColor;
+
+    switch (type.toLowerCase()) {
+      case 'food & dining':
+        return const Color(0xFFEF4444);
+      case 'entertainment':
+        return const Color(0xFFEC4899);
+      case 'utilities':
+        return const Color(0xFFF97316);
+      case 'transportation':
+        return const Color(0xFF8B5CF6);
+      case 'shopping':
+        return const Color(0xFFEF4444);
+      case 'investments':
+        return const Color(0xFF22C55E);
+      default:
+        return UIConstants.slateGreyColor;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final txnAsync = ref.watch(transactionProvider);
     return txnAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error loading transactions: $e')),
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(UIConstants.spaceLg),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (e, _) => Center(
+        child: Text(
+          'Error loading transactions: $e',
+          style: UIConstants.bodyStyle,
+        ),
+      ),
       data: (txns) {
         if (txns.isEmpty) {
-          return const Center(
-              child: Text('No transactions found.',
-                  style: TextStyle(fontSize: 16)));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.receipt_long_outlined,
+                  size: 48,
+                  color: UIConstants.mutedColor,
+                ),
+                const SizedBox(height: UIConstants.spaceMd),
+                Text(
+                  'No transactions found',
+                  style: UIConstants.bodyStyle.copyWith(
+                    color: UIConstants.mutedColor,
+                  ),
+                ),
+              ],
+            ),
+          );
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Transactions',
-                    style: TextStyle(
-                      fontSize: UIConstants.mediumTextSize,
-                      fontWeight: FontWeight.bold,
-                      color: UIConstants.slateGreyColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  OutlinedButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                      minimumSize: Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('View All'),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 8),
-            ...txns.map((txn) {
-              final isIncome = txn.type == 'income' || txn.amount > 0;
-              // Use txn.type for initials and color
-              String type = txn.type;
-              // String initials = type.isNotEmpty
-              //     ? type
-              //         .split(' ')
-              //         .map((w) => w[0])
-              //         .take(2)
-              //         .join()
-              //         .toUpperCase()
-              //     : 'T';
-              Color avatarColor;
-              switch (type.toLowerCase()) {
-                case 'salary':
-                  avatarColor = UIConstants.primaryColor.withOpacity(0.15);
-                  break;
-                case 'food & dining':
-                  avatarColor = Colors.redAccent.withOpacity(0.15);
-                  break;
-                case 'entertainment':
-                  avatarColor = Colors.pinkAccent.withOpacity(0.15);
-                  break;
-                case 'freelance':
-                  avatarColor = Colors.blueAccent.withOpacity(0.15);
-                  break;
-                case 'utilities':
-                  avatarColor = Colors.orangeAccent.withOpacity(0.15);
-                  break;
-                case 'transportation':
-                  avatarColor = Colors.deepPurpleAccent.withOpacity(0.15);
-                  break;
-                case 'investments':
-                  avatarColor = Colors.greenAccent.withOpacity(0.15);
-                  break;
-                case 'shopping':
-                  avatarColor = Colors.red.withOpacity(0.15);
-                  break;
-                default:
-                  avatarColor = UIConstants.slateGreyColor.withOpacity(0.12);
-              }
-              final amountColor =
-                  isIncome ? UIConstants.primaryColor : Colors.red;
-              final formattedAmount = (isIncome ? '+' : '-') +
-                  UIConstants.getCurrencySymbol(txn.currency) +
-                  ' ' +
-                  txn.amount.abs().toStringAsFixed(2);
-              final statusText =
-                  (txn.status == 'booked' || txn.status == 'completed')
-                      ? 'completed'
-                      : txn.status;
-              return Container(
-                decoration: BoxDecoration(
-                  color: UIConstants.whiteColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: UIConstants.slateGreyColor,
-                      blurRadius: 2,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+            // Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Transactions',
+                  style: UIConstants.titleStyle,
                 ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: UIConstants.spaceMd,
+                      vertical: UIConstants.spaceSm,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: avatarColor,
-                        child: Icon(
-                          isIncome ? Icons.south_west : Icons.north_east,
-                          color:
-                              isIncome ? UIConstants.primaryColor : Colors.red,
-                          size: 22,
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          fontSize: UIConstants.smallTextSize,
+                          fontWeight: FontWeight.w600,
+                          color: UIConstants.primaryColor,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              txn.merchant,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 16),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              (txn.date.isNotEmpty ? txn.date : ''),
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  color: UIConstants.slateGreyColor
-                                      .withOpacity(0.7)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  formattedAmount,
-                                  style: TextStyle(
-                                    color: amountColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: UIConstants.slateGreyColor
-                                    .withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                statusText,
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: UIConstants.slateGreyColor,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(width: UIConstants.spaceXs),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 12,
+                        color: UIConstants.primaryColor,
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+
+            const SizedBox(height: UIConstants.spaceMd),
+
+            // Transaction Items
+            ...txns.asMap().entries.map((entry) {
+              final index = entry.key;
+              final txn = entry.value;
+              final isIncome = txn.type == 'income' || txn.amount > 0;
+              final typeColor = _getTypeColor(txn.type, isIncome);
+
+              final amountColor =
+                  isIncome ? UIConstants.accentColor : UIConstants.dangerColor;
+              final formattedAmount =
+                  '${isIncome ? '+' : '-'}${UIConstants.getCurrencySymbol(txn.currency)} ${txn.amount.abs().toStringAsFixed(2)}';
+              final statusText = (txn.status == 'booked' ||
+                      txn.status == 'completed')
+                  ? 'Completed'
+                  : txn.status.isNotEmpty
+                      ? txn.status[0].toUpperCase() + txn.status.substring(1)
+                      : 'Pending';
+
+              return Container(
+                margin: EdgeInsets.only(
+                  bottom: index < txns.length - 1 ? UIConstants.spaceXs : 0,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: UIConstants.spaceSm,
+                  vertical: UIConstants.spaceSm,
+                ),
+                decoration: BoxDecoration(
+                  color: UIConstants.surfaceColor,
+                  borderRadius: UIConstants.borderRadiusSm,
+                  boxShadow: UIConstants.shadowSm,
+                ),
+                child: Row(
+                  children: [
+                    // Transaction Icon
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: typeColor.withOpacity(0.1),
+                        borderRadius: UIConstants.borderRadiusSm,
+                      ),
+                      child: Icon(
+                        isIncome
+                            ? Icons.south_west_rounded
+                            : Icons.north_east_rounded,
+                        color: typeColor,
+                        size: 18,
+                      ),
+                    ),
+
+                    const SizedBox(width: UIConstants.spaceMd),
+
+                    // Transaction Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            txn.merchant,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: UIConstants.mediumTextSize,
+                              color: UIConstants.blackColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: UIConstants.spaceXs),
+                          Text(
+                            txn.date.isNotEmpty ? txn.date : 'No date',
+                            style: TextStyle(
+                              fontSize: UIConstants.smallTextSize,
+                              color: UIConstants.mutedColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Amount & Status
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          formattedAmount,
+                          style: TextStyle(
+                            color: amountColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: UIConstants.mediumTextSize,
+                          ),
+                        ),
+                        const SizedBox(height: UIConstants.spaceXs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: UIConstants.spaceSm,
+                            vertical: UIConstants.spaceXs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (txn.status.toLowerCase() == 'booked' ||
+                                    txn.status.toLowerCase() == 'completed')
+                                ? UIConstants.successColor.withOpacity(0.15)
+                                : UIConstants.slateGreyColor.withOpacity(0.12),
+                            borderRadius: UIConstants.borderRadiusSm,
+                          ),
+                          child: Text(
+                            statusText,
+                            style: TextStyle(
+                              fontSize: UIConstants.tinyTextSize,
+                              color: (txn.status.toLowerCase() == 'booked' ||
+                                      txn.status.toLowerCase() == 'completed')
+                                  ? UIConstants.successColor
+                                  : UIConstants.slateGreyColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               );
-            }).toList(),
+            }),
           ],
         );
       },

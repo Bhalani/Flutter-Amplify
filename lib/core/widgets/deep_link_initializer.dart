@@ -5,7 +5,7 @@ import '../services/deep_link_service.dart';
 class DeepLinkInitializer extends ConsumerStatefulWidget {
   final Widget child;
 
-  const DeepLinkInitializer({Key? key, required this.child}) : super(key: key);
+  const DeepLinkInitializer({super.key, required this.child});
 
   @override
   ConsumerState<DeepLinkInitializer> createState() =>
